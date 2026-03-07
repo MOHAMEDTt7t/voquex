@@ -1,0 +1,558 @@
+
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — الاشتراك</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;}
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;padding-bottom:60px;}
+
+/* HEADER */
+.page-header{text-align:center;margin-bottom:32px;}
+.page-title{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+.page-sub{font-size:.82rem;color:#6b84a8;margin-bottom:20px;}
+
+/* BILLING TOGGLE */
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px;}
+.toggle-lbl{font-size:.82rem;color:#6b84a8;}
+.toggle-lbl.on{color:#e8f0fe;font-weight:700;}
+.toggle-wrap{width:48px;height:26px;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.2);border-radius:13px;cursor:pointer;position:relative;transition:all .3s;}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:var(--teal);position:absolute;top:2px;right:3px;transition:all .3s;box-shadow:0 0 8px rgba(0,245,212,.3);}
+.toggle-wrap.yearly .toggle-knob{right:calc(100% - 23px);}
+.save-badge{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.2);color:var(--green);font-size:.65rem;padding:3px 8px;border-radius:10px;font-family:'IBM Plex Mono',monospace;}
+
+/* AI COUNTER */
+.ai-counter{background:linear-gradient(135deg,rgba(170,0,255,.08),rgba(41,121,255,.06));border:1px solid rgba(170,0,255,.15);border-radius:16px;padding:16px 24px;margin-bottom:28px;display:flex;align-items:center;gap:16px;max-width:500px;margin-left:auto;margin-right:auto;}
+.ai-counter-icon{font-size:2rem;}
+.ai-counter-info{flex:1;}
+.ai-counter-title{font-size:.88rem;font-weight:700;margin-bottom:4px;}
+.ai-counter-sub{font-size:.7rem;color:#6b84a8;}
+.ai-counter-num{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--purple);}
+.ai-bar{height:6px;background:rgba(255,255,255,.04);border-radius:3px;margin-top:8px;overflow:hidden;}
+.ai-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--blue));transition:width .5s ease;}
+
+/* PLANS */
+.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;}
+.plan{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:20px;padding:24px;position:relative;transition:all .3s;cursor:pointer;}
+.plan:hover{transform:translateY(-6px);}
+.plan.featured{border-color:rgba(170,0,255,.3);background:linear-gradient(160deg,rgba(170,0,255,.05),rgba(41,121,255,.04));}
+.plan.current{border-color:rgba(0,245,212,.3);}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:.65rem;padding:4px 14px;border-radius:20px;font-weight:700;white-space:nowrap;}
+.badge-popular{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;}
+.badge-best{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000;}
+.badge-current{background:rgba(0,245,212,.15);border:1px solid rgba(0,245,212,.3);color:var(--teal);}
+.plan-icon{font-size:2rem;margin-bottom:12px;display:block;}
+.plan-name{font-size:1rem;font-weight:800;margin-bottom:4px;}
+.plan-desc{font-size:.7rem;color:#6b84a8;margin-bottom:16px;line-height:1.5;}
+.plan-price{margin-bottom:6px;}
+.plan-amount{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;line-height:1;}
+.plan-period{font-size:.7rem;color:#6b84a8;}
+.plan-year{font-size:.65rem;color:#3a4f6e;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;}
+.plan-divider{height:1px;background:var(--border);margin-bottom:16px;}
+.plan-features{list-style:none;margin-bottom:20px;}
+.plan-features li{font-size:.76rem;padding:5px 0;display:flex;align-items:center;gap:8px;color:#6b84a8;}
+.plan-features li.yes{color:#e8f0fe;}
+.plan-features li.no{opacity:.4;}
+.feat-icon{font-size:.8rem;flex-shrink:0;}
+.plan-btn{width:100%;padding:12px;border-radius:12px;font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.btn-free{background:rgba(255,255,255,.04);border:1px solid var(--border);color:#6b84a8;}
+.btn-free:hover{border-color:rgba(0,245,212,.2);color:var(--teal);}
+.btn-pro{background:linear-gradient(135deg,rgba(170,0,255,.15),rgba(41,121,255,.12));border:1px solid rgba(170,0,255,.3);color:var(--purple);}
+.btn-pro:hover{box-shadow:0 0 24px rgba(170,0,255,.2);}
+.btn-elite{background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,140,0,.1));border:1px solid rgba(255,184,0,.3);color:var(--gold);}
+.btn-elite:hover{box-shadow:0 0 24px rgba(255,184,0,.2);}
+.btn-team{background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.08));border:1px solid rgba(0,245,212,.2);color:var(--teal);}
+.btn-team:hover{box-shadow:0 0 24px rgba(0,245,212,.12);}
+.btn-current{background:rgba(0,245,212,.06);border:1px solid rgba(0,245,212,.2);color:var(--teal);cursor:default;}
+
+/* PAYMENT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all .3s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:#0a0d1a;border:1px solid rgba(0,245,212,.12);border-radius:24px;padding:32px;width:480px;max-width:95vw;position:relative;animation:modalIn .3s ease;}
+@keyframes modalIn{from{transform:scale(.95);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-close{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:#6b84a8;cursor:pointer;font-size:.8rem;transition:all .2s;}
+.modal-close:hover{color:#e8f0fe;}
+.modal-title{font-size:1.1rem;font-weight:800;margin-bottom:4px;text-align:center;}
+.modal-sub{font-size:.72rem;color:#6b84a8;text-align:center;margin-bottom:24px;}
+
+/* PAYMENT STEPS */
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;}
+.step{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;border:1px solid var(--border);color:#3a4f6e;transition:all .3s;}
+.step.done{background:var(--teal);border-color:var(--teal);color:#000;}
+.step.active{border-color:var(--teal);color:var(--teal);}
+.step-line{flex:1;height:1px;background:var(--border);max-width:40px;}
+.step-line.done{background:var(--teal);}
+
+/* USDT BOX */
+.usdt-box{background:rgba(6,8,15,.8);border:1px solid rgba(0,245,212,.1);border-radius:14px;padding:20px;margin-bottom:16px;}
+.usdt-network{display:flex;gap:8px;margin-bottom:16px;}
+.net-btn{flex:1;padding:8px;border-radius:8px;font-size:.75rem;border:1px solid var(--border);background:rgba(15,21,37,.6);color:#6b84a8;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;text-align:center;}
+.net-btn.on{border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.06);color:var(--teal);}
+.usdt-amount{text-align:center;margin-bottom:16px;}
+.usdt-amount-num{font-family:'IBM Plex Mono',monospace;font-size:1.8rem;font-weight:700;color:var(--teal);}
+.usdt-amount-lbl{font-size:.65rem;color:#3a4f6e;margin-top:2px;}
+.wallet-wrap{background:rgba(15,21,37,.6);border:1px solid rgba(0,245,212,.08);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;}
+.wallet-addr{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#6b84a8;flex:1;word-break:break-all;line-height:1.6;}
+.copy-btn{padding:8px 14px;background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.15);border-radius:8px;color:var(--teal);cursor:pointer;font-size:.75rem;transition:all .2s;white-space:nowrap;}
+.copy-btn:hover{background:rgba(0,245,212,.12);}
+.copy-btn.copied{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.2);color:var(--green);}
+
+/* CONFIRM STEP */
+.confirm-form{display:flex;flex-direction:column;gap:12px;}
+.cf-label{font-size:.72rem;color:#6b84a8;margin-bottom:5px;display:block;}
+.cf-inp{width:100%;padding:11px 14px;background:rgba(6,8,15,.8);border:1px solid rgba(26,37,64,.8);border-radius:10px;color:#e8f0fe;font-family:'IBM Plex Mono',monospace;font-size:.82rem;outline:none;transition:all .25s;}
+.cf-inp:focus{border-color:rgba(0,245,212,.3);}
+.cf-inp::placeholder{color:#3a4f6e;}
+.confirm-btn{width:100%;padding:14px;background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(41,121,255,.1));border:1px solid rgba(0,245,212,.25);border-radius:12px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.confirm-btn:hover{box-shadow:0 0 24px rgba(0,245,212,.12);}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:20px 0;}
+.success-icon{font-size:3.5rem;margin-bottom:16px;animation:successPop .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes successPop{from{transform:scale(0);}to{transform:scale(1);}}
+.success-title{font-size:1.1rem;font-weight:800;margin-bottom:8px;color:var(--green);}
+.success-sub{font-size:.78rem;color:#6b84a8;line-height:1.6;}
+
+/* COUNTDOWN */
+.countdown{background:linear-gradient(135deg,rgba(255,23,68,.04),rgba(255,184,0,.02));border:1px solid rgba(255,23,68,.1);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.cd-title{font-size:.78rem;color:#ff6b6b;margin-bottom:4px;}
+.cd-sub{font-size:.62rem;color:#3a4f6e;}
+.cd-timer{display:flex;gap:8px;margin-right:auto;}
+.cd-unit{text-align:center;}
+.cd-num{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:700;color:#ff6b6b;line-height:1;}
+.cd-lbl{font-size:.5rem;color:#3a4f6e;text-transform:uppercase;letter-spacing:.5px;}
+
+/* FAQ */
+.faq{max-width:600px;margin:0 auto;}
+.faq-item{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.faq-q{padding:14px 18px;cursor:pointer;font-size:.82rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;transition:background .2s;}
+.faq-q:hover{background:rgba(0,245,212,.02);}
+.faq-a{padding:0 18px;font-size:.76rem;color:#6b84a8;line-height:1.7;max-height:0;overflow:hidden;transition:all .3s;}
+.faq-a.open{padding:0 18px 14px;max-height:200px;}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .5s ease forwards;}
+.fu2{animation:fadeUp .5s .1s ease forwards;opacity:0;}
+.fu3{animation:fadeUp .5s .2s ease forwards;opacity:0;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item active">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-header fu">
+    <div class="page-title">طور أداءك مع Voquex 🚀</div>
+    <div class="page-sub">اختر الخطة المناسبة — يمكنك الترقية أو التخفيض في أي وقت</div>
+  </div>
+
+  <!-- AI COUNTER -->
+  <div class="ai-counter fu2" id="aiCounter">
+    <div class="ai-counter-icon">🤖</div>
+    <div class="ai-counter-info">
+      <div class="ai-counter-title">EdgeBot AI — المحادثات المجانية</div>
+      <div class="ai-counter-sub">بعد انتهاء المحادثات المجانية تحتاج Pro أو Elite للاستمرار</div>
+      <div class="ai-bar"><div class="ai-bar-fill" id="aiBarFill" style="width:70%"></div></div>
+    </div>
+    <div>
+      <div class="ai-counter-num" id="aiCountNum">3</div>
+      <div style="font-size:.6rem;color:#3a4f6e;text-align:center">من 10</div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown fu2">
+    <div>
+      <div class="cd-title">🔥 عرض محدود</div>
+      <div class="cd-sub">خصم 30% على Pro — ينتهي قريباً</div>
+    </div>
+    <div class="cd-timer">
+      <div class="cd-unit"><div class="cd-num" id="cdH">23</div><div class="cd-lbl">ساعة</div></div>
+      <div style="color:#ff6b6b;font-size:1.2rem;padding-top:2px">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cdM">47</div><div class="cd-lbl">دقيقة</div></div>
+      <div style="color:#ff6b6b;font-size:1.2rem;padding-top:2px">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cdS">12</div><div class="cd-lbl">ثانية</div></div>
+    </div>
+  </div>
+
+  <!-- BILLING TOGGLE -->
+  <div class="billing-toggle fu3">
+    <span class="toggle-lbl on" id="lbl-monthly">شهري</span>
+    <div class="toggle-wrap" id="billingToggle" onclick="toggleBilling()">
+      <div class="toggle-knob"></div>
+    </div>
+    <span class="toggle-lbl" id="lbl-yearly">سنوي</span>
+    <span class="save-badge">وفّر 20%</span>
+  </div>
+
+  <!-- PLANS -->
+  <div class="plans fu3">
+
+    <!-- FREE -->
+    <div class="plan current" id="plan-free">
+      <span class="plan-badge badge-current">خطتك الحالية</span>
+      <span class="plan-icon">🆓</span>
+      <div class="plan-name">Free</div>
+      <div class="plan-desc">ابدأ مجاناً وجرّب القوة الحقيقية</div>
+      <div class="plan-price"><span class="plan-amount" style="color:#6b84a8">$0</span></div>
+      <div class="plan-period">للأبد</div>
+      <div class="plan-year" style="opacity:0">—</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon">✅</span> 20 صفقة شهرياً</li>
+        <li class="yes"><span class="feat-icon">✅</span> لوحة تحكم كاملة</li>
+        <li class="yes"><span class="feat-icon">✅</span> التحليلات الأساسية</li>
+        <li class="yes"><span class="feat-icon">🤖</span> 10 محادثات AI مجاناً</li>
+        <li class="no"><span class="feat-icon">❌</span> AI غير محدود</li>
+        <li class="no"><span class="feat-icon">❌</span> تقارير متقدمة</li>
+        <li class="no"><span class="feat-icon">❌</span> تنبيهات ذكية</li>
+      </ul>
+      <button class="plan-btn btn-current">✓ خطتك الحالية</button>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan featured" id="plan-pro" onclick="openPayment('pro')">
+      <span class="plan-badge badge-popular">🔥 الأكثر شيوعاً</span>
+      <span class="plan-icon">⚡</span>
+      <div class="plan-name" style="color:var(--purple)">Pro</div>
+      <div class="plan-desc">للمتداول الجاد الذي يريد التطور</div>
+      <div class="plan-price"><span class="plan-amount" style="color:var(--purple)" id="pro-price">$9.99</span></div>
+      <div class="plan-period">/شهر</div>
+      <div class="plan-year" id="pro-year">أو $95.9/سنة</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon">✅</span> صفقات غير محدودة</li>
+        <li class="yes"><span class="feat-icon">✅</span> جميع التحليلات</li>
+        <li class="yes"><span class="feat-icon">✅</span> تقارير متقدمة</li>
+        <li class="yes"><span class="feat-icon">🤖</span> AI غير محدود</li>
+        <li class="yes"><span class="feat-icon">✅</span> تنبيهات ذكية</li>
+        <li class="yes"><span class="feat-icon">✅</span> تصدير البيانات</li>
+        <li class="no"><span class="feat-icon">❌</span> EdgeBot المتقدم</li>
+      </ul>
+      <button class="plan-btn btn-pro">🚀 اشترك الآن</button>
+    </div>
+
+    <!-- ELITE -->
+    <div class="plan" id="plan-elite" onclick="openPayment('elite')">
+      <span class="plan-badge badge-best">👑 الأفضل</span>
+      <span class="plan-icon">🏆</span>
+      <div class="plan-name" style="color:var(--gold)">Elite</div>
+      <div class="plan-desc">AI Coach متقدم لأعلى مستوى تداول</div>
+      <div class="plan-price"><span class="plan-amount" style="color:var(--gold)" id="elite-price">$19.99</span></div>
+      <div class="plan-period">/شهر</div>
+      <div class="plan-year" id="elite-year">أو $191.9/سنة</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon">✅</span> كل مميزات Pro</li>
+        <li class="yes"><span class="feat-icon">🤖</span> EdgeBot المتقدم</li>
+        <li class="yes"><span class="feat-icon">✅</span> تحليل نفسي عميق</li>
+        <li class="yes"><span class="feat-icon">✅</span> خطة تداول شخصية</li>
+        <li class="yes"><span class="feat-icon">✅</span> تنبيهات فورية</li>
+        <li class="yes"><span class="feat-icon">✅</span> أولوية في الدعم</li>
+        <li class="yes"><span class="feat-icon">✅</span> وصول مبكر للمميزات</li>
+      </ul>
+      <button class="plan-btn btn-elite">👑 احصل على Elite</button>
+    </div>
+
+    <!-- TEAM -->
+    <div class="plan" id="plan-team" onclick="openPayment('team')">
+      <span class="plan-icon">👥</span>
+      <div class="plan-name" style="color:var(--teal)">Team</div>
+      <div class="plan-desc">لمجموعات التداول والغرف</div>
+      <div class="plan-price"><span class="plan-amount" style="color:var(--teal)" id="team-price">$49.99</span></div>
+      <div class="plan-period">/شهر</div>
+      <div class="plan-year" id="team-year">أو $479.9/سنة</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon">✅</span> 10 مستخدمين</li>
+        <li class="yes"><span class="feat-icon">✅</span> كل مميزات Elite</li>
+        <li class="yes"><span class="feat-icon">✅</span> لوحة تحكم المجموعة</li>
+        <li class="yes"><span class="feat-icon">✅</span> مقارنة الأداء</li>
+        <li class="yes"><span class="feat-icon">✅</span> تقارير المجموعة</li>
+        <li class="yes"><span class="feat-icon">✅</span> API خاص</li>
+        <li class="yes"><span class="feat-icon">✅</span> دعم مخصص 24/7</li>
+      </ul>
+      <button class="plan-btn btn-team">👥 للفرق</button>
+    </div>
+
+  </div>
+
+  <!-- FAQ -->
+  <div style="text-align:center;margin-bottom:20px;font-size:.88rem;font-weight:700;color:#6b84a8">❓ أسئلة شائعة</div>
+  <div class="faq fu3">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">كيف أدفع بـ USDT؟ <span>▼</span></div>
+      <div class="faq-a">انقر على زر الاشتراك، انسخ عنوان المحفظة، ابعت المبلغ على شبكة TRC20، وارسل لقطة شاشة على واتساب. سيتم تفعيل حسابك خلال ساعة.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">هل يمكنني إلغاء الاشتراك؟ <span>▼</span></div>
+      <div class="faq-a">نعم، يمكنك إلغاء الاشتراك في أي وقت. ستستمر في الاستمتاع بالمميزات حتى نهاية الفترة المدفوعة.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">ما الفرق بين Pro وElite؟ <span>▼</span></div>
+      <div class="faq-a">Pro يعطيك AI غير محدود وجميع التحليلات. Elite يضيف EdgeBot المتقدم مع خطط تداول شخصية وتحليل نفسي عميق.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">ما شبكة USDT المقبولة؟ <span>▼</span></div>
+      <div class="faq-a">نقبل USDT على شبكة TRC20 (TRON) — الرسوم أقل من $1. تأكد من اختيار TRC20 عند الإرسال.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕ إغلاق</button>
+    <div class="modal-title" id="modalTitle">اشتراك Pro ⚡</div>
+    <div class="modal-sub" id="modalSub">ادفع بـ USDT وفعّل حسابك خلال ساعة</div>
+
+    <div class="steps">
+      <div class="step active" id="step1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">2</div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="step3">3</div>
+    </div>
+
+    <!-- STEP 1: PAYMENT -->
+    <div id="payStep1">
+      <div class="usdt-box">
+        <div class="usdt-network">
+          <button class="net-btn on" onclick="setNetwork('TRC20',this)">TRC20 ✅</button>
+          <button class="net-btn" onclick="setNetwork('ERC20',this)">ERC20</button>
+          <button class="net-btn" onclick="setNetwork('BEP20',this)">BEP20</button>
+        </div>
+        <div class="usdt-amount">
+          <div class="usdt-amount-num" id="modalAmount">$9.99 USDT</div>
+          <div class="usdt-amount-lbl">المبلغ المطلوب على شبكة TRC20</div>
+        </div>
+        <div class="wallet-wrap">
+          <div class="wallet-addr" id="walletAddr">TYyjUbuAYiJRzeiJmjDCoSo3VfPVCLSWpW</div>
+          <button class="copy-btn" id="copyBtn" onclick="copyWallet()">نسخ</button>
+        </div>
+      </div>
+      <div style="font-size:.7rem;color:#3a4f6e;text-align:center;margin-bottom:16px;line-height:1.6;">
+        ⚠️ تأكد من اختيار شبكة <strong style="color:var(--teal)">TRC20</strong> عند الإرسال<br>
+        أرسل المبلغ بالضبط لتجنب أي مشاكل
+      </div>
+      <button class="confirm-btn" onclick="goStep2()">✅ أرسلت المبلغ — التالي</button>
+    </div>
+
+    <!-- STEP 2: CONFIRM -->
+    <div id="payStep2" style="display:none">
+      <div class="confirm-form">
+        <div class="fg">
+          <label class="cf-label">البريد الإلكتروني المسجل</label>
+          <input class="cf-inp" id="confirmEmail" placeholder="example@email.com" readonly>
+        </div>
+        <div class="fg">
+          <label class="cf-label">Hash التحويل (Transaction ID)</label>
+          <input class="cf-inp" id="txHash" placeholder="abc123def456...">
+        </div>
+        <div style="font-size:.7rem;color:#6b84a8;line-height:1.6;padding:10px 12px;background:rgba(0,245,212,.03);border:1px solid rgba(0,245,212,.06);border-radius:8px;">
+          💡 يمكنك إرسال لقطة شاشة للتحويل عبر واتساب على:<br>
+          <strong style="color:var(--teal)">info.mohammed1c@gmail.com</strong>
+        </div>
+        <button class="confirm-btn" onclick="goStep3()">📤 إرسال طلب التفعيل</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: SUCCESS -->
+    <div id="payStep3" style="display:none">
+      <div class="success-wrap">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">تم إرسال طلبك!</div>
+        <div class="success-sub">
+          سيتم مراجعة الدفعة وتفعيل حسابك خلال <strong style="color:var(--teal)">ساعة واحدة</strong> كحد أقصى.<br><br>
+          ستصلك رسالة تأكيد على بريدك الإلكتروني عند التفعيل.
+        </div>
+        <button class="confirm-btn" style="margin-top:20px" onclick="closeModal()">✓ حسناً، شكراً!</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null,yearly=false,currentPlan='pro'
+const prices={pro:{m:9.99,y:7.99},elite:{m:19.99,y:15.99},team:{m:49.99,y:39.99}}
+const WALLET='TYyjUbuAYiJRzeiJmjDCoSo3VfPVCLSWpW'
+
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;}
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+
+const{data}=await sb.from('trades').select('id').eq('user_id',user.id)
+document.getElementById('navBadge').textContent=(data||[]).length
+
+// AI Counter من localStorage
+const aiKey='voquex_ai_count_'+user.id
+const aiUsed=parseInt(localStorage.getItem(aiKey)||'7')
+const aiLeft=Math.max(0,10-aiUsed)
+document.getElementById('aiCountNum').textContent=aiLeft
+document.getElementById('aiBarFill').style.width=(aiUsed/10*100)+'%'
+if(aiLeft<=2)document.getElementById('aiCounter').style.borderColor='rgba(255,23,68,.3)'
+
+// BILLING TOGGLE
+window.toggleBilling=function(){
+  yearly=!yearly
+  const toggle=document.getElementById('billingToggle')
+  toggle.classList.toggle('yearly',yearly)
+  document.getElementById('lbl-monthly').classList.toggle('on',!yearly)
+  document.getElementById('lbl-yearly').classList.toggle('on',yearly)
+  updatePrices()
+}
+
+function updatePrices(){
+  ;['pro','elite','team'].forEach(p=>{
+    const price=yearly?prices[p].y:prices[p].m
+    document.getElementById(p+'-price').textContent='$'+price
+    document.getElementById(p+'-year').textContent=yearly?'يوفر $'+((prices[p].m-prices[p].y)*12).toFixed(0)+'/سنة':'أو $'+(prices[p].y*12).toFixed(1)+'/سنة'
+  })
+}
+
+// PAYMENT MODAL
+window.openPayment=function(plan){
+  currentPlan=plan
+  const names={pro:'Pro ⚡',elite:'Elite 👑',team:'Team 👥'}
+  const price=yearly?prices[plan].y:prices[plan].m
+  document.getElementById('modalTitle').textContent='اشتراك '+names[plan]
+  document.getElementById('modalAmount').textContent='$'+price+' USDT'
+  document.getElementById('confirmEmail').value=user.email
+  document.getElementById('walletAddr').textContent=WALLET
+  // reset steps
+  ;['payStep1','payStep2','payStep3'].forEach((s,i)=>document.getElementById(s).style.display=i===0?'block':'none')
+  ;[1,2,3].forEach(i=>{document.getElementById('step'+i).className='step'+(i===1?' active':'')})
+  ;[1,2].forEach(i=>document.getElementById('line'+i).className='step-line')
+  document.getElementById('payModal').classList.add('show')
+}
+
+window.closeModal=function(){
+  document.getElementById('payModal').classList.remove('show')
+}
+
+window.setNetwork=function(net,btn){
+  document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+}
+
+window.copyWallet=function(){
+  navigator.clipboard.writeText(WALLET)
+  const btn=document.getElementById('copyBtn')
+  btn.textContent='✓ تم النسخ'
+  btn.classList.add('copied')
+  setTimeout(()=>{btn.textContent='نسخ';btn.classList.remove('copied')},2000)
+}
+
+window.goStep2=function(){
+  document.getElementById('payStep1').style.display='none'
+  document.getElementById('payStep2').style.display='block'
+  document.getElementById('step1').className='step done'
+  document.getElementById('line1').className='step-line done'
+  document.getElementById('step2').className='step active'
+}
+
+window.goStep3=function(){
+  document.getElementById('payStep2').style.display='none'
+  document.getElementById('payStep3').style.display='block'
+  document.getElementById('step2').className='step done'
+  document.getElementById('line2').className='step-line done'
+  document.getElementById('step3').className='step done'
+}
+
+// COUNTDOWN
+let cdSecs=86400-Math.floor(Date.now()/1000)%86400
+function updateCountdown(){
+  const h=Math.floor(cdSecs/3600),m=Math.floor((cdSecs%3600)/60),s=cdSecs%60
+  document.getElementById('cdH').textContent=String(h).padStart(2,'0')
+  document.getElementById('cdM').textContent=String(m).padStart(2,'0')
+  document.getElementById('cdS').textContent=String(s).padStart(2,'0')
+  if(cdSecs>0)cdSecs--;
+}
+updateCountdown()
+setInterval(updateCountdown,1000)
+
+// FAQ
+window.toggleFaq=function(el){
+  const ans=el.nextElementSibling
+  const isOpen=ans.classList.contains('open')
+  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'))
+  document.querySelectorAll('.faq-q span').forEach(s=>s.textContent='▼')
+  if(!isOpen){ans.classList.add('open');el.querySelector('span').textContent='▲';}
+}
+
+// TICKER
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0});tEl.innerHTML=buildT()},3000)
+
+updatePrices()
+</script>
+</body>
+</html>
+```
+

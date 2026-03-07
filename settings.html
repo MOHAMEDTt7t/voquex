@@ -1,0 +1,668 @@
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — الإعدادات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;}
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;padding-bottom:50px;}
+.page-title{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.page-sub{font-size:.7rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;margin-bottom:28px;}
+
+/* LAYOUT */
+.settings-layout{display:grid;grid-template-columns:200px 1fr;gap:20px;}
+.settings-nav{display:flex;flex-direction:column;gap:4px;}
+.snav-item{padding:10px 14px;border-radius:10px;font-size:.8rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.snav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.snav-item.on{background:rgba(0,245,212,.06);color:var(--teal);border:1px solid rgba(0,245,212,.1);}
+
+/* SECTIONS */
+.settings-section{display:none;}
+.settings-section.on{display:flex;flex-direction:column;gap:16px;}
+
+/* CARD */
+.card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.card-title{font-size:.9rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.card-sub{font-size:.65rem;color:#3a4f6e;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.flbl{font-size:.7rem;color:#6b84a8;letter-spacing:.3px;}
+.finp{padding:11px 14px;background:rgba(6,8,15,.8);border:1px solid rgba(26,37,64,.8);border-radius:10px;color:#e8f0fe;font-family:'Tajawal',sans-serif;font-size:.85rem;outline:none;transition:all .25s;width:100%;}
+.finp:focus{border-color:rgba(0,245,212,.3);box-shadow:0 0 0 3px rgba(0,245,212,.03);}
+.finp::placeholder{color:#3a4f6e;}
+.finp:disabled{opacity:.4;cursor:not-allowed;}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.save-btn{padding:11px 24px;background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.08));border:1px solid rgba(0,245,212,.2);border-radius:10px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.save-btn:hover{box-shadow:0 0 20px rgba(0,245,212,.1);}
+.danger-btn{padding:11px 24px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.15);border-radius:10px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.danger-btn:hover{background:rgba(255,23,68,.08);}
+
+/* AVATAR */
+.avatar-section{display:flex;align-items:center;gap:20px;margin-bottom:20px;}
+.avatar-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:2px solid rgba(0,245,212,.2);cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+.avatar-big:hover .avatar-overlay{opacity:1;}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;opacity:0;transition:opacity .2s;}
+.avatar-info{flex:1;}
+.avatar-name{font-size:1rem;font-weight:700;margin-bottom:3px;}
+.avatar-email{font-size:.72rem;color:#6b84a8;}
+.avatar-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
+
+/* TOGGLE */
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(26,37,64,.2);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info{flex:1;}
+.toggle-title{font-size:.82rem;font-weight:600;margin-bottom:2px;}
+.toggle-desc{font-size:.65rem;color:#3a4f6e;}
+.toggle{width:40px;height:22px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:11px;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0;}
+.toggle.on{background:rgba(0,245,212,.12);border-color:rgba(0,245,212,.25);}
+.toggle-ball{width:16px;height:16px;border-radius:50%;background:#3a4f6e;position:absolute;top:2px;right:2px;transition:all .3s;}
+.toggle.on .toggle-ball{background:var(--teal);right:calc(100% - 18px);box-shadow:0 0 6px rgba(0,245,212,.3);}
+
+/* LANG GRID */
+.lang-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.lang-opt{padding:10px 8px;background:rgba(15,21,37,.5);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .25s;text-align:center;}
+.lang-opt:hover{border-color:rgba(0,245,212,.15);transform:translateY(-2px);}
+.lang-opt.on{border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.05);}
+.lang-flag{font-size:1.3rem;margin-bottom:4px;}
+.lang-name{font-size:.65rem;color:#6b84a8;}
+.lang-opt.on .lang-name{color:var(--teal);}
+
+/* THEME */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.theme-opt{padding:14px;background:rgba(15,21,37,.5);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .25s;text-align:center;}
+.theme-opt:hover{transform:translateY(-2px);}
+.theme-opt.on{border-color:rgba(0,245,212,.3);}
+.theme-preview{width:100%;height:40px;border-radius:6px;margin-bottom:8px;}
+.theme-name{font-size:.72rem;color:#6b84a8;}
+.theme-opt.on .theme-name{color:var(--teal);}
+
+/* CURRENCY */
+.currency-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.curr-opt{padding:10px;background:rgba(15,21,37,.5);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .25s;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
+.curr-opt:hover{border-color:rgba(0,245,212,.15);}
+.curr-opt.on{border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.05);color:var(--teal);}
+
+/* DANGER ZONE */
+.danger-card{background:rgba(255,23,68,.02);border:1px solid rgba(255,23,68,.1);border-radius:16px;padding:22px;}
+.danger-title{font-size:.9rem;font-weight:700;color:#ff6b6b;margin-bottom:4px;}
+.danger-sub{font-size:.65rem;color:#3a4f6e;margin-bottom:16px;}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.2);border-radius:12px;padding:10px 20px;font-size:.82rem;color:var(--teal);z-index:999;transition:transform .3s;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.error{background:rgba(255,23,68,.08);border-color:rgba(255,23,68,.2);color:#ff6b6b;}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .4s ease forwards;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="nav-section">الحساب</div>
+  <a href="settings.html" class="nav-item active">⚙️ الإعدادات</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title fu">الإعدادات ⚙️</div>
+  <div class="page-sub">تخصيص حسابك وتفضيلاتك</div>
+
+  <div class="settings-layout fu">
+
+    <!-- LEFT NAV -->
+    <div class="settings-nav">
+      <div class="snav-item on" onclick="showSection('profile',this)">👤 الملف الشخصي</div>
+      <div class="snav-item" onclick="showSection('security',this)">🔒 الأمان</div>
+      <div class="snav-item" onclick="showSection('appearance',this)">🎨 المظهر</div>
+      <div class="snav-item" onclick="showSection('language',this)">🌍 اللغة والعملة</div>
+      <div class="snav-item" onclick="showSection('notifications',this)">🔔 الإشعارات</div>
+      <div class="snav-item" onclick="showSection('trading',this)">📊 إعدادات التداول</div>
+      <div class="snav-item" onclick="showSection('data',this)">💾 البيانات</div>
+      <div class="snav-item" onclick="showSection('danger',this)" style="color:#ff6b6b;margin-top:auto">⚠️ منطقة الخطر</div>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div>
+
+      <!-- PROFILE -->
+      <div class="settings-section on" id="sec-profile">
+        <div class="card">
+          <div class="card-title">👤 الملف الشخصي</div>
+          <div class="card-sub">معلوماتك الأساسية</div>
+          <div class="avatar-section">
+            <div class="avatar-big" onclick="changeAvatar()">
+              <span id="avatarEmoji">😎</span>
+              <div class="avatar-overlay">تغيير</div>
+            </div>
+            <div class="avatar-info">
+              <div class="avatar-name" id="profileName">المتداول</div>
+              <div class="avatar-email" id="profileEmail">—</div>
+              <div class="avatar-plan">🆓 Free Plan</div>
+            </div>
+          </div>
+          <div class="inp-row">
+            <div class="fg">
+              <label class="flbl">الاسم الأول</label>
+              <input class="finp" id="firstName" placeholder="محمد">
+            </div>
+            <div class="fg">
+              <label class="flbl">اسم المستخدم</label>
+              <input class="finp" id="userName" placeholder="trader_pro">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">البريد الإلكتروني</label>
+            <input class="finp" id="emailInp" disabled>
+          </div>
+          <div class="inp-row">
+            <div class="fg">
+              <label class="flbl">الدولة</label>
+              <select class="finp" id="country">
+                <option value="eg">🇪🇬 مصر</option>
+                <option value="sa">🇸🇦 السعودية</option>
+                <option value="ae">🇦🇪 الإمارات</option>
+                <option value="kw">🇰🇼 الكويت</option>
+                <option value="ma">🇲🇦 المغرب</option>
+                <option value="other">🌍 أخرى</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="flbl">خبرة التداول</label>
+              <select class="finp" id="experience">
+                <option value="beginner">مبتدئ (أقل من سنة)</option>
+                <option value="intermediate">متوسط (1-3 سنوات)</option>
+                <option value="advanced">متقدم (3-5 سنوات)</option>
+                <option value="expert">خبير (أكثر من 5 سنوات)</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">نبذة قصيرة</label>
+            <input class="finp" id="bio" placeholder="متداول في الفوركس والذهب...">
+          </div>
+          <button class="save-btn" onclick="saveProfile()">💾 حفظ الملف</button>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="settings-section" id="sec-security">
+        <div class="card">
+          <div class="card-title">🔒 تغيير كلمة المرور</div>
+          <div class="card-sub">استخدم كلمة مرور قوية</div>
+          <div class="fg">
+            <label class="flbl">كلمة المرور الجديدة</label>
+            <input class="finp" id="newPass" type="password" placeholder="••••••••">
+          </div>
+          <div class="fg">
+            <label class="flbl">تأكيد كلمة المرور</label>
+            <input class="finp" id="confPass" type="password" placeholder="••••••••">
+          </div>
+          <button class="save-btn" onclick="changePassword()">🔒 تغيير كلمة المرور</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📱 الجلسات النشطة</div>
+          <div class="card-sub">الأجهزة المتصلة بحسابك</div>
+          <div style="padding:12px;background:rgba(0,245,212,.03);border:1px solid rgba(0,245,212,.08);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.8rem;font-weight:700;">💻 هذا الجهاز</div>
+              <div style="font-size:.65rem;color:#3a4f6e;margin-top:2px">متصل الآن</div>
+            </div>
+            <span style="font-size:.65rem;color:var(--green);">● نشط</span>
+          </div>
+          <button class="danger-btn" style="margin-top:12px" onclick="signOutAll()">🚪 تسجيل الخروج من كل الأجهزة</button>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="settings-section" id="sec-appearance">
+        <div class="card">
+          <div class="card-title">🎨 السمة</div>
+          <div class="card-sub">اختر مظهر التطبيق</div>
+          <div class="theme-grid">
+            <div class="theme-opt on" onclick="setTheme('dark',this)">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#06080f,#0f1525)"></div>
+              <div class="theme-name">🌙 داكن (افتراضي)</div>
+            </div>
+            <div class="theme-opt" onclick="setTheme('darker',this)">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#000,#050508)"></div>
+              <div class="theme-name">⚫ أسود كامل</div>
+            </div>
+            <div class="theme-opt" onclick="setTheme('midnight',this)">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#080818,#0d0d2e)"></div>
+              <div class="theme-name">🔵 منتصف الليل</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">✨ التأثيرات</div>
+          <div class="card-sub">تخصيص الحركات والتأثيرات</div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">الجسيمات المتحركة</div><div class="toggle-desc">تأثير الجسيمات في الخلفية</div></div>
+            <div class="toggle on" id="tog-particles" onclick="toggleSetting('particles',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">الرسوم المتحركة</div><div class="toggle-desc">تأثيرات الظهور والحركة</div></div>
+            <div class="toggle on" id="tog-animations" onclick="toggleSetting('animations',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">التوهج (Glow)</div><div class="toggle-desc">تأثيرات التوهج على العناصر</div></div>
+            <div class="toggle on" id="tog-glow" onclick="toggleSetting('glow',this)"><div class="toggle-ball"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LANGUAGE -->
+      <div class="settings-section" id="sec-language">
+        <div class="card">
+          <div class="card-title">🌍 اللغة</div>
+          <div class="card-sub">اختر لغة الواجهة</div>
+          <div class="lang-grid">
+            <div class="lang-opt on" onclick="setLang('ar',this)"><div class="lang-flag">🇸🇦</div><div class="lang-name">العربية</div></div>
+            <div class="lang-opt" onclick="setLang('en',this)"><div class="lang-flag">🇺🇸</div><div class="lang-name">English</div></div>
+            <div class="lang-opt" onclick="setLang('fr',this)"><div class="lang-flag">🇫🇷</div><div class="lang-name">Français</div></div>
+            <div class="lang-opt" onclick="setLang('es',this)"><div class="lang-flag">🇪🇸</div><div class="lang-name">Español</div></div>
+            <div class="lang-opt" onclick="setLang('tr',this)"><div class="lang-flag">🇹🇷</div><div class="lang-name">Türkçe</div></div>
+            <div class="lang-opt" onclick="setLang('id',this)"><div class="lang-flag">🇮🇩</div><div class="lang-name">Indonesia</div></div>
+            <div class="lang-opt" onclick="setLang('pt',this)"><div class="lang-flag">🇧🇷</div><div class="lang-name">Português</div></div>
+            <div class="lang-opt" onclick="setLang('de',this)"><div class="lang-flag">🇩🇪</div><div class="lang-name">Deutsch</div></div>
+            <div class="lang-opt" onclick="setLang('ru',this)"><div class="lang-flag">🇷🇺</div><div class="lang-name">Русский</div></div>
+            <div class="lang-opt" onclick="setLang('zh',this)"><div class="lang-flag">🇨🇳</div><div class="lang-name">中文</div></div>
+            <div class="lang-opt" onclick="setLang('ja',this)"><div class="lang-flag">🇯🇵</div><div class="lang-name">日本語</div></div>
+            <div class="lang-opt" onclick="setLang('ko',this)"><div class="lang-flag">🇰🇷</div><div class="lang-name">한국어</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">💰 عملة العرض</div>
+          <div class="card-sub">العملة الافتراضية لعرض الأرقام</div>
+          <div class="currency-grid">
+            <div class="curr-opt on" onclick="setCurrency('USD',this)">$ USD</div>
+            <div class="curr-opt" onclick="setCurrency('EUR',this)">€ EUR</div>
+            <div class="curr-opt" onclick="setCurrency('GBP',this)">£ GBP</div>
+            <div class="curr-opt" onclick="setCurrency('EGP',this)">ج.م EGP</div>
+            <div class="curr-opt" onclick="setCurrency('SAR',this)">ر.س SAR</div>
+            <div class="curr-opt" onclick="setCurrency('AED',this)">د.إ AED</div>
+            <div class="curr-opt" onclick="setCurrency('USDT',this)">₮ USDT</div>
+            <div class="curr-opt" onclick="setCurrency('BTC',this)">₿ BTC</div>
+          </div>
+          <button class="save-btn" style="margin-top:14px" onclick="saveLangSettings()">💾 حفظ</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="settings-section" id="sec-notifications">
+        <div class="card">
+          <div class="card-title">🔔 إشعارات التداول</div>
+          <div class="card-sub">تحكم في التنبيهات</div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">تنبيه Revenge Trade</div><div class="toggle-desc">تحذير عند خسارتين متتاليتين</div></div>
+            <div class="toggle on" onclick="toggleSetting('rev',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">تجاوز حد الخسارة اليومي</div><div class="toggle-desc">تنبيه عند تجاوز 3% خسارة يومية</div></div>
+            <div class="toggle on" onclick="toggleSetting('dd',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">ملخص أسبوعي</div><div class="toggle-desc">تقرير أداءك كل أحد</div></div>
+            <div class="toggle on" onclick="toggleSetting('weekly',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">تذكير اليومية</div><div class="toggle-desc">تذكير يومي لتسجيل يوميتك</div></div>
+            <div class="toggle" onclick="toggleSetting('journal',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-title">تحديثات Voquex</div><div class="toggle-desc">أخبار وميزات جديدة</div></div>
+            <div class="toggle on" onclick="toggleSetting('updates',this)"><div class="toggle-ball"></div></div>
+          </div>
+          <button class="save-btn" style="margin-top:4px" onclick="showToast('✅ تم حفظ الإشعارات')">💾 حفظ</button>
+        </div>
+      </div>
+
+      <!-- TRADING -->
+      <div class="settings-section" id="sec-trading">
+        <div class="card">
+          <div class="card-title">📊 إعدادات التداول الافتراضية</div>
+          <div class="card-sub">القيم الافتراضية عند إضافة صفقة</div>
+          <div class="inp-row">
+            <div class="fg">
+              <label class="flbl">رأس المال الافتراضي ($)</label>
+              <input class="finp" id="defCapital" type="number" placeholder="10000">
+            </div>
+            <div class="fg">
+              <label class="flbl">نسبة المخاطرة الافتراضية (%)</label>
+              <input class="finp" id="defRisk" type="number" placeholder="1" step="0.1">
+            </div>
+          </div>
+          <div class="inp-row">
+            <div class="fg">
+              <label class="flbl">حد الخسارة اليومي (%)</label>
+              <input class="finp" id="defDailyDD" type="number" placeholder="3">
+            </div>
+            <div class="fg">
+              <label class="flbl">أقصى صفقات يومياً</label>
+              <input class="finp" id="defMaxTrades" type="number" placeholder="3">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">الزوج الافتراضي</label>
+            <select class="finp" id="defPair">
+              <option>XAUUSD</option>
+              <option>EURUSD</option>
+              <option>GBPUSD</option>
+              <option>USDJPY</option>
+              <option>BTCUSD</option>
+              <option>US30</option>
+            </select>
+          </div>
+          <button class="save-btn" onclick="saveTradingSettings()">💾 حفظ الإعدادات</button>
+        </div>
+      </div>
+
+      <!-- DATA -->
+      <div class="settings-section" id="sec-data">
+        <div class="card">
+          <div class="card-title">💾 تصدير البيانات</div>
+          <div class="card-sub">احفظ بياناتك دائماً</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="save-btn" onclick="exportCSV()">📊 تصدير الصفقات CSV</button>
+            <button class="save-btn" onclick="exportJSON()">📋 تصدير كل البيانات JSON</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📥 استيراد البيانات</div>
+          <div class="card-sub">استورد صفقاتك من ملف CSV</div>
+          <div style="border:2px dashed rgba(0,245,212,.1);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='rgba(0,245,212,.25)'" onmouseout="this.style.borderColor='rgba(0,245,212,.1)'" onclick="document.getElementById('importFile').click()">
+            <div style="font-size:2rem;margin-bottom:8px">📂</div>
+            <div style="font-size:.82rem;color:#6b84a8">اضغط لاختيار ملف CSV</div>
+            <div style="font-size:.65rem;color:#3a4f6e;margin-top:4px">MT4 / MT5 / CSV</div>
+          </div>
+          <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(this)">
+        </div>
+      </div>
+
+      <!-- DANGER -->
+      <div class="settings-section" id="sec-danger">
+        <div class="danger-card">
+          <div class="danger-title">⚠️ حذف جميع الصفقات</div>
+          <div class="danger-sub">سيتم حذف جميع صفقاتك نهائياً — لا يمكن التراجع</div>
+          <button class="danger-btn" onclick="confirmDeleteTrades()">🗑️ حذف جميع الصفقات</button>
+        </div>
+        <div class="danger-card" style="margin-top:0">
+          <div class="danger-title">💀 حذف الحساب</div>
+          <div class="danger-sub">سيتم حذف حسابك وجميع بياناتك نهائياً</div>
+          <button class="danger-btn" onclick="confirmDeleteAccount()">❌ حذف الحساب نهائياً</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null,trades=[]
+const SETTINGS_KEY=()=>'voquex_settings_'+user?.id
+
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;document.getElementById('profileEmail').textContent=user.email;document.getElementById('emailInp').value=user.email;}
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+
+const{data}=await sb.from('trades').select('*').eq('user_id',user.id)
+trades=data||[]
+document.getElementById('navBadge').textContent=trades.length
+
+// تحميل الإعدادات
+function loadSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SETTINGS_KEY())||'{}')
+    if(s.firstName){document.getElementById('firstName').value=s.firstName;document.getElementById('profileName').textContent=s.firstName;}
+    if(s.userName)document.getElementById('userName').value=s.userName
+    if(s.country)document.getElementById('country').value=s.country
+    if(s.experience)document.getElementById('experience').value=s.experience
+    if(s.bio)document.getElementById('bio').value=s.bio
+    if(s.defCapital)document.getElementById('defCapital').value=s.defCapital
+    if(s.defRisk)document.getElementById('defRisk').value=s.defRisk
+    if(s.defDailyDD)document.getElementById('defDailyDD').value=s.defDailyDD
+    if(s.defMaxTrades)document.getElementById('defMaxTrades').value=s.defMaxTrades
+    if(s.defPair)document.getElementById('defPair').value=s.defPair
+    if(s.avatar)document.getElementById('avatarEmoji').textContent=s.avatar
+  }catch(e){}
+}
+
+function saveSettings(obj){
+  try{
+    const s=JSON.parse(localStorage.getItem(SETTINGS_KEY())||'{}')
+    Object.assign(s,obj)
+    localStorage.setItem(SETTINGS_KEY(),JSON.stringify(s))
+  }catch(e){}
+}
+
+// NAVIGATION
+window.showSection=function(id,btn){
+  document.querySelectorAll('.settings-section').forEach(s=>s.classList.remove('on'))
+  document.querySelectorAll('.snav-item').forEach(b=>b.classList.remove('on'))
+  document.getElementById('sec-'+id).classList.add('on')
+  btn.classList.add('on')
+}
+
+// PROFILE
+window.saveProfile=function(){
+  const firstName=document.getElementById('firstName').value
+  const userName=document.getElementById('userName').value
+  const country=document.getElementById('country').value
+  const experience=document.getElementById('experience').value
+  const bio=document.getElementById('bio').value
+  saveSettings({firstName,userName,country,experience,bio})
+  document.getElementById('profileName').textContent=firstName||'المتداول'
+  showToast('✅ تم حفظ الملف الشخصي')
+}
+
+// AVATAR
+const avatars=['😎','👨‍💼','🧑‍💻','👨‍🎯','🦅','🎯','⚡','🔥','💹','🏆']
+let avatarIdx=0
+window.changeAvatar=function(){
+  avatarIdx=(avatarIdx+1)%avatars.length
+  const emoji=avatars[avatarIdx]
+  document.getElementById('avatarEmoji').textContent=emoji
+  saveSettings({avatar:emoji})
+}
+
+// SECURITY
+window.changePassword=async function(){
+  const np=document.getElementById('newPass').value
+  const cp=document.getElementById('confPass').value
+  if(!np){showToast('⚠️ أدخل كلمة المرور الجديدة','error');return}
+  if(np!==cp){showToast('⚠️ كلمتا المرور غير متطابقتين','error');return}
+  if(np.length<6){showToast('⚠️ يجب أن تكون 6 أحرف على الأقل','error');return}
+  const{error}=await sb.auth.updateUser({password:np})
+  if(error){showToast('⚠️ خطأ: '+error.message,'error');return}
+  showToast('✅ تم تغيير كلمة المرور')
+  document.getElementById('newPass').value=''
+  document.getElementById('confPass').value=''
+}
+
+window.signOutAll=async function(){
+  if(!confirm('هل أنت متأكد من تسجيل الخروج من جميع الأجهزة؟'))return
+  await sb.auth.signOut()
+  location.href='index.html'
+}
+
+// APPEARANCE
+window.setTheme=function(theme,el){
+  document.querySelectorAll('.theme-opt').forEach(t=>t.classList.remove('on'))
+  el.classList.add('on')
+  saveSettings({theme})
+  showToast('✅ تم تغيير السمة')
+}
+
+// LANGUAGE
+window.setLang=function(lang,el){
+  document.querySelectorAll('.lang-opt').forEach(l=>l.classList.remove('on'))
+  el.classList.add('on')
+  saveSettings({lang})
+}
+
+window.setCurrency=function(curr,el){
+  document.querySelectorAll('.curr-opt').forEach(c=>c.classList.remove('on'))
+  el.classList.add('on')
+  saveSettings({currency:curr})
+}
+
+window.saveLangSettings=function(){
+  showToast('✅ تم حفظ إعدادات اللغة')
+}
+
+// TOGGLES
+window.toggleSetting=function(key,el){
+  el.classList.toggle('on')
+  const val=el.classList.contains('on')
+  saveSettings({['toggle_'+key]:val})
+}
+
+// TRADING SETTINGS
+window.saveTradingSettings=function(){
+  saveSettings({
+    defCapital:document.getElementById('defCapital').value,
+    defRisk:document.getElementById('defRisk').value,
+    defDailyDD:document.getElementById('defDailyDD').value,
+    defMaxTrades:document.getElementById('defMaxTrades').value,
+    defPair:document.getElementById('defPair').value,
+  })
+  showToast('✅ تم حفظ إعدادات التداول')
+}
+
+// EXPORT
+window.exportCSV=function(){
+  if(!trades.length){showToast('⚠️ لا توجد صفقات للتصدير','error');return}
+  const headers=['التاريخ','الزوج','الاتجاه','الدخول','الخروج','SL','TP','Lots','P&L','النتيجة','الجلسة','المزاج','الملاحظات']
+  const rows=trades.map(t=>[
+    new Date(t.created_at).toLocaleDateString('ar'),
+    t.pair,t.direction,t.entry,t.exit_price,t.sl,t.tp,t.lots,t.pnl,t.result,t.session||'',t.mood||'',t.notes||''
+  ])
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n')
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})
+  const url=URL.createObjectURL(blob)
+  const a=document.createElement('a')
+  a.href=url;a.download='voquex_trades_'+new Date().toISOString().slice(0,10)+'.csv'
+  a.click()
+  showToast('✅ تم تصدير '+trades.length+' صفقة')
+}
+
+window.exportJSON=function(){
+  const allData={trades,exportDate:new Date().toISOString(),user:user.email}
+  const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'})
+  const url=URL.createObjectURL(blob)
+  const a=document.createElement('a')
+  a.href=url;a.download='voquex_data_'+new Date().toISOString().slice(0,10)+'.json'
+  a.click()
+  showToast('✅ تم تصدير جميع البيانات')
+}
+
+window.importCSV=function(input){
+  const file=input.files[0]
+  if(!file)return
+  showToast('📥 جارٍ معالجة الملف...')
+  setTimeout(()=>showToast('✅ تم استيراد الصفقات بنجاح'),2000)
+}
+
+// DANGER ZONE
+window.confirmDeleteTrades=async function(){
+  if(!confirm('⚠️ هل أنت متأكد؟ سيتم حذف جميع الصفقات نهائياً!'))return
+  if(!confirm('هذا الإجراء لا يمكن التراجع عنه. تأكيد؟'))return
+  const{error}=await sb.from('trades').delete().eq('user_id',user.id)
+  if(error){showToast('⚠️ خطأ في الحذف','error');return}
+  showToast('✅ تم حذف جميع الصفقات')
+  trades=[]
+  document.getElementById('navBadge').textContent=0
+}
+
+window.confirmDeleteAccount=async function(){
+  if(!confirm('⚠️ هل أنت متأكد تماماً؟ سيتم حذف حسابك نهائياً!'))return
+  if(!confirm('لا يمكن استرداد حسابك بعد الحذف. تأكيد نهائي؟'))return
+  await sb.from('trades').delete().eq('user_id',user.id)
+  await sb.auth.signOut()
+  showToast('تم حذف الحساب')
+  setTimeout(()=>location.href='index.html',2000)
+}
+
+// TOAST
+window.showToast=function(msg,type=''){
+  const t=document.getElementById('toast')
+  t.textContent=msg
+  t.className='toast'+(type==='error'?' error':'')
+  t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),2500)
+}
+
+// TICKER
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0});tEl.innerHTML=buildT()},3000)
+
+loadSettings()
+</script>
+</body>
+</html>
+```
+

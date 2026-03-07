@@ -1,0 +1,688 @@
+
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — الحاسبة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;}
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;padding-bottom:50px;}
+.page-title{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.page-sub{font-size:.7rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;margin-bottom:24px;}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.tab{padding:9px 18px;border-radius:20px;font-size:.8rem;background:rgba(9,12,24,.8);border:1px solid var(--border);color:#3a4f6e;cursor:pointer;transition:all .25s;font-family:'Tajawal',sans-serif;}
+.tab.on{background:rgba(0,245,212,.08);border-color:rgba(0,245,212,.2);color:var(--teal);}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;padding:20px;transition:border-color .3s;}
+.card:hover{border-color:rgba(0,245,212,.08);}
+.card-title{font-size:.88rem;font-weight:700;margin-bottom:4px;}
+.card-sub{font-size:.62rem;color:#3a4f6e;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.flbl{font-size:.68rem;color:#6b84a8;letter-spacing:.5px;}
+.finp,.fsel{padding:10px 12px;background:rgba(6,8,15,.8);border:1px solid rgba(26,37,64,.8);border-radius:9px;color:#e8f0fe;font-family:'IBM Plex Mono',monospace;font-size:.85rem;outline:none;transition:all .25s;width:100%;}
+.finp:focus,.fsel:focus{border-color:rgba(0,245,212,.3);}
+.finp::placeholder{color:#3a4f6e;}
+.fsel option{background:#0f1525;}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.result-box{background:rgba(0,245,212,.03);border:1px solid rgba(0,245,212,.08);border-radius:12px;padding:14px;margin-top:12px;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(26,37,64,.2);}
+.rrow:last-child{border-bottom:none;}
+.rlbl{font-size:.7rem;color:#6b84a8;}
+.rval{font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:700;}
+.calc-btn{width:100%;padding:11px;background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.08));border:1px solid rgba(0,245,212,.2);border-radius:10px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;margin-top:10px;}
+.calc-btn:hover{box-shadow:0 0 20px rgba(0,245,212,.12);}
+
+/* COMPOUND TABLE */
+.comp-table{width:100%;border-collapse:collapse;margin-top:12px;}
+.comp-table th{padding:8px 10px;text-align:right;font-size:.6rem;color:#3a4f6e;font-weight:700;background:rgba(15,21,37,.6);}
+.comp-table td{padding:8px 10px;font-size:.75rem;border-bottom:1px solid rgba(26,37,64,.12);font-family:'IBM Plex Mono',monospace;}
+.comp-table tr:hover td{background:rgba(0,245,212,.01);}
+
+/* PIP TABLE */
+.pip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.pip-card{background:rgba(15,21,37,.5);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;transition:all .25s;}
+.pip-card:hover{border-color:rgba(0,245,212,.15);transform:translateY(-2px);}
+.pip-pair{font-size:.72rem;color:#6b84a8;margin-bottom:4px;}
+.pip-val{font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:700;color:var(--teal);}
+.pip-sub{font-size:.6rem;color:#3a4f6e;margin-top:2px;}
+
+/* PROFIT SIM */
+.sim-track{height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;margin:8px 0;}
+.sim-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width 1s ease;}
+
+/* SECTION */
+.section{display:none;}
+.section.on{display:block;}
+
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .4s ease forwards;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item active">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title fu">الحاسبة 💹</div>
+  <div class="page-sub">أدوات حساب دقيقة لكل متداول</div>
+
+  <div class="tabs fu">
+    <button class="tab on" onclick="showTab('pip',this)">📍 قيمة النقطة</button>
+    <button class="tab" onclick="showTab('profit',this)">💰 حاسبة الربح</button>
+    <button class="tab" onclick="showTab('compound',this)">📈 الفائدة المركبة</button>
+    <button class="tab" onclick="showTab('convert',this)">🔄 تحويل العملات</button>
+    <button class="tab" onclick="showTab('margin',this)">🏦 حاسبة الهامش</button>
+    <button class="tab" onclick="showTab('target',this)">🎯 هدف الربح</button>
+  </div>
+
+  <!-- PIP VALUE -->
+  <div class="section on" id="sec-pip">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📍 حاسبة قيمة النقطة</div>
+        <div class="card-sub">احسب قيمة كل نقطة لأي زوج</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">حجم الصفقة (Lots)</label>
+            <input class="finp" id="pip-lots" type="number" placeholder="1.00" step="0.01" oninput="calcPip()">
+          </div>
+          <div class="fg">
+            <label class="flbl">الزوج</label>
+            <select class="fsel" id="pip-pair" onchange="calcPip()">
+              <option value="eurusd">EURUSD</option>
+              <option value="gbpusd">GBPUSD</option>
+              <option value="usdjpy">USDJPY</option>
+              <option value="gold">XAUUSD (ذهب)</option>
+              <option value="us30">US30 (داو)</option>
+              <option value="nas100">NAS100</option>
+              <option value="btc">BTCUSD</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">سعر الزوج الحالي</label>
+            <input class="finp" id="pip-price" type="number" step="any" placeholder="1.0892" oninput="calcPip()">
+          </div>
+          <div class="fg">
+            <label class="flbl">عدد النقاط</label>
+            <input class="finp" id="pip-pips" type="number" placeholder="10" oninput="calcPip()">
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">قيمة النقطة الواحدة</span><span class="rval" id="pipOne" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">قيمة الصفقة الكاملة</span><span class="rval" id="pipTotal" style="color:var(--green)">—</span></div>
+          <div class="rrow"><span class="rlbl">لكل 1 Lot</span><span class="rval" id="pipPerLot" style="color:var(--gold)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 قيم النقاط الثابتة</div>
+        <div class="card-sub">قيمة نقطة واحدة لكل 1 Lot</div>
+        <div class="pip-grid">
+          <div class="pip-card"><div class="pip-pair">EURUSD</div><div class="pip-val">$10</div><div class="pip-sub">لكل pip</div></div>
+          <div class="pip-card"><div class="pip-pair">GBPUSD</div><div class="pip-val">$10</div><div class="pip-sub">لكل pip</div></div>
+          <div class="pip-card"><div class="pip-pair">USDJPY</div><div class="pip-val">$9.09</div><div class="pip-sub">تقريباً</div></div>
+          <div class="pip-card"><div class="pip-pair">XAUUSD</div><div class="pip-val">$10</div><div class="pip-sub">لكل نقطة</div></div>
+          <div class="pip-card"><div class="pip-pair">US30</div><div class="pip-val">$10</div><div class="pip-sub">لكل نقطة</div></div>
+          <div class="pip-card"><div class="pip-pair">NAS100</div><div class="pip-val">$20</div><div class="pip-sub">لكل نقطة</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFIT CALCULATOR -->
+  <div class="section" id="sec-profit">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">💰 حاسبة الربح والخسارة</div>
+        <div class="card-sub">احسب P&L قبل إغلاق الصفقة</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">الزوج</label>
+            <select class="fsel" id="pr-pair" onchange="calcProfit()">
+              <option value="forex">Forex</option>
+              <option value="gold">XAUUSD</option>
+              <option value="indices">مؤشرات</option>
+              <option value="crypto">Crypto</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">الاتجاه</label>
+            <select class="fsel" id="pr-dir" onchange="calcProfit()">
+              <option value="buy">شراء BUY</option>
+              <option value="sell">بيع SELL</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">سعر الدخول</label>
+            <input class="finp" id="pr-entry" type="number" step="any" placeholder="2345.00" oninput="calcProfit()">
+          </div>
+          <div class="fg">
+            <label class="flbl">سعر الإغلاق</label>
+            <input class="finp" id="pr-close" type="number" step="any" placeholder="2365.00" oninput="calcProfit()">
+          </div>
+          <div class="fg">
+            <label class="flbl">حجم الصفقة (Lots)</label>
+            <input class="finp" id="pr-lots" type="number" step="0.01" placeholder="1.00" oninput="calcProfit()">
+          </div>
+          <div class="fg">
+            <label class="flbl">رأس المال ($)</label>
+            <input class="finp" id="pr-capital" type="number" placeholder="10000" oninput="calcProfit()">
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">الربح / الخسارة</span><span class="rval" id="prPnl" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">النقاط</span><span class="rval" id="prPips" style="color:#82b1ff">—</span></div>
+          <div class="rrow"><span class="rlbl">نسبة من رأس المال</span><span class="rval" id="prPct" style="color:var(--gold)">—</span></div>
+          <div class="rrow"><span class="rlbl">النتيجة</span><span class="rval" id="prResult">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 محاكاة الأداء</div>
+        <div class="card-sub">إذا تداولت بنفس الأداء</div>
+        <div class="fg">
+          <label class="flbl">رأس المال الأولي ($)</label>
+          <input class="finp" id="sim-capital" type="number" placeholder="1000" oninput="calcSim()">
+        </div>
+        <div class="fg">
+          <label class="flbl">ربح لكل صفقة ($)</label>
+          <input class="finp" id="sim-win" type="number" placeholder="50" oninput="calcSim()">
+        </div>
+        <div class="fg">
+          <label class="flbl">خسارة لكل صفقة ($)</label>
+          <input class="finp" id="sim-loss" type="number" placeholder="25" oninput="calcSim()">
+        </div>
+        <div class="fg">
+          <label class="flbl">Win Rate (%)</label>
+          <input class="finp" id="sim-wr" type="number" placeholder="55" oninput="calcSim()">
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">بعد 10 صفقات</span><span class="rval" id="sim10" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">بعد 50 صفقة</span><span class="rval" id="sim50" style="color:var(--green)">—</span></div>
+          <div class="rrow"><span class="rlbl">بعد 100 صفقة</span><span class="rval" id="sim100" style="color:var(--gold)">—</span></div>
+          <div class="rrow"><span class="rlbl">نمو الحساب</span><span class="rval" id="simGrowth">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPOUND -->
+  <div class="section" id="sec-compound">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📈 حاسبة الفائدة المركبة</div>
+        <div class="card-sub">قوة التراكم في التداول</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">رأس المال ($)</label>
+            <input class="finp" id="cp-capital" type="number" placeholder="1000" oninput="calcCompound()">
+          </div>
+          <div class="fg">
+            <label class="flbl">ربح شهري (%)</label>
+            <input class="finp" id="cp-rate" type="number" step="0.1" placeholder="5" oninput="calcCompound()">
+          </div>
+          <div class="fg">
+            <label class="flbl">عدد الأشهر</label>
+            <input class="finp" id="cp-months" type="number" placeholder="12" oninput="calcCompound()">
+          </div>
+          <div class="fg">
+            <label class="flbl">إضافة شهرية ($)</label>
+            <input class="finp" id="cp-add" type="number" placeholder="0" oninput="calcCompound()">
+          </div>
+        </div>
+        <div class="result-box" id="cpResult">
+          <div class="rrow"><span class="rlbl">رأس المال النهائي</span><span class="rval" id="cpFinal" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">إجمالي الربح</span><span class="rval" id="cpProfit" style="color:var(--green)">—</span></div>
+          <div class="rrow"><span class="rlbl">نسبة النمو</span><span class="rval" id="cpGrowth" style="color:var(--gold)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 جدول النمو الشهري</div>
+        <div class="card-sub">رحلة رأس مالك شهراً بشهر</div>
+        <div style="max-height:320px;overflow-y:auto;">
+          <table class="comp-table" id="compTable">
+            <thead><tr><th>الشهر</th><th>رأس المال</th><th>الربح</th><th>النمو %</th></tr></thead>
+            <tbody id="compBody"><tr><td colspan="4" style="text-align:center;color:#3a4f6e;padding:20px">أدخل البيانات أولاً</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONVERT -->
+  <div class="section" id="sec-convert">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🔄 تحويل العملات</div>
+        <div class="card-sub">تحويل فوري بين العملات الرئيسية</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">المبلغ</label>
+            <input class="finp" id="cv-amount" type="number" placeholder="1000" oninput="calcConvert()">
+          </div>
+          <div class="fg">
+            <label class="flbl">من</label>
+            <select class="fsel" id="cv-from" onchange="calcConvert()">
+              <option value="USD">USD 🇺🇸</option>
+              <option value="EUR">EUR 🇪🇺</option>
+              <option value="GBP">GBP 🇬🇧</option>
+              <option value="JPY">JPY 🇯🇵</option>
+              <option value="EGP">EGP 🇪🇬</option>
+              <option value="SAR">SAR 🇸🇦</option>
+              <option value="AED">AED 🇦🇪</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">إلى</label>
+            <select class="fsel" id="cv-to" onchange="calcConvert()">
+              <option value="EGP">EGP 🇪🇬</option>
+              <option value="USD">USD 🇺🇸</option>
+              <option value="EUR">EUR 🇪🇺</option>
+              <option value="GBP">GBP 🇬🇧</option>
+              <option value="SAR">SAR 🇸🇦</option>
+              <option value="AED">AED 🇦🇪</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">سعر الصرف</label>
+            <input class="finp" id="cv-rate" type="number" step="any" placeholder="48.5">
+          </div>
+        </div>
+        <button class="calc-btn" onclick="calcConvert()">احسب التحويل</button>
+        <div class="result-box" style="margin-top:12px">
+          <div class="rrow"><span class="rlbl">النتيجة</span><span class="rval" id="cvResult" style="color:var(--teal);font-size:1.1rem">—</span></div>
+          <div class="rrow"><span class="rlbl">سعر الصرف</span><span class="rval" id="cvRate" style="color:var(--gold)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💵 أسعار صرف تقريبية</div>
+        <div class="card-sub">أسعار مرجعية — تحقق من الأسعار الحية</div>
+        <div class="pip-grid">
+          <div class="pip-card"><div class="pip-pair">USD/EGP</div><div class="pip-val" style="color:var(--gold)">~48.5</div><div class="pip-sub">تقريبي</div></div>
+          <div class="pip-card"><div class="pip-pair">EUR/EGP</div><div class="pip-val" style="color:var(--gold)">~52</div><div class="pip-sub">تقريبي</div></div>
+          <div class="pip-card"><div class="pip-pair">GBP/EGP</div><div class="pip-val" style="color:var(--gold)">~61</div><div class="pip-sub">تقريبي</div></div>
+          <div class="pip-card"><div class="pip-pair">USD/SAR</div><div class="pip-val" style="color:var(--teal)">3.75</div><div class="pip-sub">ثابت</div></div>
+          <div class="pip-card"><div class="pip-pair">USD/AED</div><div class="pip-val" style="color:var(--teal)">3.67</div><div class="pip-sub">ثابت</div></div>
+          <div class="pip-card"><div class="pip-pair">EUR/USD</div><div class="pip-val" style="color:#82b1ff">~1.089</div><div class="pip-sub">تقريبي</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARGIN -->
+  <div class="section" id="sec-margin">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏦 حاسبة الهامش</div>
+        <div class="card-sub">احسب الهامش المطلوب لفتح صفقة</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">حجم الصفقة (Lots)</label>
+            <input class="finp" id="mg-lots" type="number" step="0.01" placeholder="1.00" oninput="calcMargin()">
+          </div>
+          <div class="fg">
+            <label class="flbl">الرافعة المالية</label>
+            <select class="fsel" id="mg-lev" onchange="calcMargin()">
+              <option value="50">1:50</option>
+              <option value="100" selected>1:100</option>
+              <option value="200">1:200</option>
+              <option value="400">1:400</option>
+              <option value="500">1:500</option>
+              <option value="1000">1:1000</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">سعر الزوج</label>
+            <input class="finp" id="mg-price" type="number" step="any" placeholder="2345.00" oninput="calcMargin()">
+          </div>
+          <div class="fg">
+            <label class="flbl">حجم العقد</label>
+            <select class="fsel" id="mg-size" onchange="calcMargin()">
+              <option value="100000">Forex (100,000)</option>
+              <option value="100">Gold (100 أوقية)</option>
+              <option value="1">مؤشرات (1)</option>
+            </select>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">الهامش المطلوب</span><span class="rval" id="mgMargin" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">قيمة المركز الكاملة</span><span class="rval" id="mgPosition" style="color:#82b1ff">—</span></div>
+          <div class="rrow"><span class="rlbl">الرافعة الفعلية</span><span class="rval" id="mgLevActual" style="color:var(--gold)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ الرافعة المالية — الحقيقة</div>
+        <div class="card-sub">كيف تؤثر الرافعة على مخاطرتك</div>
+        <div class="pip-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="pip-card"><div class="pip-pair">1:50</div><div class="pip-val" style="color:var(--green)">آمن</div><div class="pip-sub">للمبتدئين</div></div>
+          <div class="pip-card"><div class="pip-pair">1:100</div><div class="pip-val" style="color:var(--teal)">معتدل</div><div class="pip-sub">الأكثر شيوعاً</div></div>
+          <div class="pip-card"><div class="pip-pair">1:500</div><div class="pip-val" style="color:var(--gold)">خطر</div><div class="pip-sub">للخبراء فقط</div></div>
+          <div class="pip-card"><div class="pip-pair">1:1000</div><div class="pip-val" style="color:#ff6b6b">خطر جداً</div><div class="pip-sub">تجنبه</div></div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:rgba(255,184,0,.04);border:1px solid rgba(255,184,0,.1);border-radius:10px;font-size:.72rem;color:#ffb800;line-height:1.6;">
+          ⚠️ الرافعة المالية سلاح ذو حدين — تضاعف أرباحك وخسائرك بنفس النسبة. استخدم أقل رافعة ممكنة مع إدارة مخاطر صارمة.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARGET -->
+  <div class="section" id="sec-target">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🎯 حاسبة هدف الربح</div>
+        <div class="card-sub">كم صفقة تحتاج لتحقيق هدفك؟</div>
+        <div class="inp-row">
+          <div class="fg">
+            <label class="flbl">رأس المال ($)</label>
+            <input class="finp" id="tg-capital" type="number" placeholder="1000" oninput="calcTarget()">
+          </div>
+          <div class="fg">
+            <label class="flbl">الهدف ($)</label>
+            <input class="finp" id="tg-goal" type="number" placeholder="10000" oninput="calcTarget()">
+          </div>
+          <div class="fg">
+            <label class="flbl">ربح لكل صفقة ($)</label>
+            <input class="finp" id="tg-win" type="number" placeholder="50" oninput="calcTarget()">
+          </div>
+          <div class="fg">
+            <label class="flbl">Win Rate (%)</label>
+            <input class="finp" id="tg-wr" type="number" placeholder="55" oninput="calcTarget()">
+          </div>
+          <div class="fg">
+            <label class="flbl">خسارة لكل صفقة ($)</label>
+            <input class="finp" id="tg-loss" type="number" placeholder="25" oninput="calcTarget()">
+          </div>
+          <div class="fg">
+            <label class="flbl">صفقات يومياً</label>
+            <input class="finp" id="tg-daily" type="number" placeholder="3" oninput="calcTarget()">
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">صفقات للوصول للهدف</span><span class="rval" id="tgTrades" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">الأيام المطلوبة</span><span class="rval" id="tgDays" style="color:#82b1ff">—</span></div>
+          <div class="rrow"><span class="rlbl">الأشهر المطلوبة</span><span class="rval" id="tgMonths" style="color:var(--gold)">—</span></div>
+          <div class="rrow"><span class="rlbl">ربح شهري متوقع</span><span class="rval" id="tgMonthly" style="color:var(--green)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🚀 خطة الـ $10,000</div>
+        <div class="card-sub">رحلتك من رأس مالك لـ $10,000</div>
+        <div class="fg">
+          <label class="flbl">رأس مالك الحالي ($)</label>
+          <input class="finp" id="plan-capital" type="number" placeholder="1000" oninput="calcPlan()">
+        </div>
+        <div class="fg">
+          <label class="flbl">ربح شهري مستهدف (%)</label>
+          <input class="finp" id="plan-rate" type="number" placeholder="10" oninput="calcPlan()">
+        </div>
+        <div class="result-box">
+          <div class="rrow"><span class="rlbl">الشهور للـ $10,000</span><span class="rval" id="planMonths" style="color:var(--teal)">—</span></div>
+          <div class="rrow"><span class="rlbl">رأس المال بعد سنة</span><span class="rval" id="planYear" style="color:var(--green)">—</span></div>
+          <div class="rrow"><span class="rlbl">نسبة النمو</span><span class="rval" id="planGrowth" style="color:var(--gold)">—</span></div>
+          <div class="rrow"><span class="rlbl">التقييم</span><span class="rval" id="planJudge">—</span></div>
+        </div>
+        <div id="planMsg" style="margin-top:10px;font-size:.75rem;color:#6b84a8;line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{document.getElementById('userEmail').textContent=session.user.email;}
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+const{data}=await sb.from('trades').select('id').eq('user_id',session.user.id)
+document.getElementById('navBadge').textContent=(data||[]).length
+
+window.showTab=function(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'))
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'))
+  document.getElementById('sec-'+id).classList.add('on')
+  btn.classList.add('on')
+}
+
+// PIP
+window.calcPip=function(){
+  const lots=parseFloat(document.getElementById('pip-lots').value)||0
+  const pair=document.getElementById('pip-pair').value
+  const price=parseFloat(document.getElementById('pip-price').value)||1
+  const pips=parseFloat(document.getElementById('pip-pips').value)||0
+  if(!lots)return
+  const pipVals={eurusd:10,gbpusd:10,usdjpy:9.09,gold:10,us30:10,nas100:20,btc:1}
+  const perLot=pipVals[pair]||10
+  const one=perLot*lots/100
+  const total=perLot*lots*pips/10
+  document.getElementById('pipOne').textContent='$'+(perLot*lots/10).toFixed(2)
+  document.getElementById('pipTotal').textContent='$'+total.toFixed(2)
+  document.getElementById('pipPerLot').textContent='$'+perLot+' / pip'
+}
+
+// PROFIT
+window.calcProfit=function(){
+  const pair=document.getElementById('pr-pair').value
+  const dir=document.getElementById('pr-dir').value
+  const entry=parseFloat(document.getElementById('pr-entry').value)||0
+  const close=parseFloat(document.getElementById('pr-close').value)||0
+  const lots=parseFloat(document.getElementById('pr-lots').value)||0
+  const capital=parseFloat(document.getElementById('pr-capital').value)||0
+  if(!entry||!close||!lots)return
+  const pipVals={forex:10,gold:10,indices:10,crypto:1}
+  const pv=pipVals[pair]||10
+  const diff=dir==='buy'?close-entry:entry-close
+  const pips=Math.abs(diff)*(pair==='forex'?10000:pair==='gold'?10:1)
+  const pnl=diff*pv*lots*(pair==='forex'?10000:pair==='gold'?10:1)/100
+  document.getElementById('prPnl').textContent=(pnl>=0?'+':'')+'$'+pnl.toFixed(2)
+  document.getElementById('prPnl').style.color=pnl>=0?'var(--green)':'#ff6b6b'
+  document.getElementById('prPips').textContent=(diff>=0?'+':'')+pips.toFixed(1)+' pips'
+  if(capital){
+    const pct=pnl/capital*100
+    document.getElementById('prPct').textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%'
+  }
+  document.getElementById('prResult').textContent=pnl>=0?'✅ ربح':'❌ خسارة'
+  document.getElementById('prResult').style.color=pnl>=0?'var(--green)':'#ff6b6b'
+}
+
+// SIM
+window.calcSim=function(){
+  const capital=parseFloat(document.getElementById('sim-capital').value)||0
+  const win=parseFloat(document.getElementById('sim-win').value)||0
+  const loss=parseFloat(document.getElementById('sim-loss').value)||0
+  const wr=parseFloat(document.getElementById('sim-wr').value)||0
+  if(!capital||!win||!loss||!wr)return
+  function sim(n){
+    let c=capital
+    for(let i=0;i<n;i++){if(Math.random()*100<wr)c+=win;else c-=loss;}
+    return c
+  }
+  // حساب نظري
+  const expPerTrade=(wr/100*win)-((100-wr)/100*loss)
+  const after10=capital+expPerTrade*10
+  const after50=capital+expPerTrade*50
+  const after100=capital+expPerTrade*100
+  const growth=(after100-capital)/capital*100
+
+  document.getElementById('sim10').textContent='$'+after10.toFixed(0)
+  document.getElementById('sim10').style.color=after10>=capital?'var(--green)':'#ff6b6b'
+  document.getElementById('sim50').textContent='$'+after50.toFixed(0)
+  document.getElementById('sim50').style.color=after50>=capital?'var(--green)':'#ff6b6b'
+  document.getElementById('sim100').textContent='$'+after100.toFixed(0)
+  document.getElementById('sim100').style.color=after100>=capital?'var(--green)':'#ff6b6b'
+  document.getElementById('simGrowth').textContent=(growth>=0?'+':'')+growth.toFixed(1)+'%'
+  document.getElementById('simGrowth').style.color=growth>=0?'var(--green)':'#ff6b6b'
+}
+
+// COMPOUND
+window.calcCompound=function(){
+  const capital=parseFloat(document.getElementById('cp-capital').value)||0
+  const rate=parseFloat(document.getElementById('cp-rate').value)||0
+  const months=parseInt(document.getElementById('cp-months').value)||0
+  const add=parseFloat(document.getElementById('cp-add').value)||0
+  if(!capital||!rate||!months)return
+  let c=capital
+  const rows=[]
+  for(let i=1;i<=months;i++){
+    const profit=c*rate/100
+    c+=profit+add
+    rows.push({month:i,capital:c,profit,growth:(c-capital)/capital*100})
+  }
+  const final=rows[rows.length-1]
+  document.getElementById('cpFinal').textContent='$'+final.capital.toFixed(0)
+  document.getElementById('cpProfit').textContent='+$'+(final.capital-capital-(add*months)).toFixed(0)
+  document.getElementById('cpGrowth').textContent='+'+final.growth.toFixed(1)+'%'
+
+  document.getElementById('compBody').innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.month}</td>
+      <td style="color:var(--teal)">$${r.capital.toFixed(0)}</td>
+      <td style="color:var(--green)">+$${r.profit.toFixed(0)}</td>
+      <td style="color:var(--gold)">${r.growth.toFixed(1)}%</td>
+    </tr>`).join('')
+}
+
+// CONVERT
+window.calcConvert=function(){
+  const amount=parseFloat(document.getElementById('cv-amount').value)||0
+  const rate=parseFloat(document.getElementById('cv-rate').value)||1
+  const from=document.getElementById('cv-from').value
+  const to=document.getElementById('cv-to').value
+  if(!amount||!rate)return
+  const result=amount*rate
+  document.getElementById('cvResult').textContent=result.toLocaleString('ar')+' '+to
+  document.getElementById('cvRate').textContent='1 '+from+' = '+rate+' '+to
+}
+
+// MARGIN
+window.calcMargin=function(){
+  const lots=parseFloat(document.getElementById('mg-lots').value)||0
+  const lev=parseFloat(document.getElementById('mg-lev').value)||100
+  const price=parseFloat(document.getElementById('mg-price').value)||1
+  const size=parseFloat(document.getElementById('mg-size').value)||100000
+  if(!lots||!price)return
+  const position=lots*size*price/100000*100
+  const margin=position/lev
+  document.getElementById('mgMargin').textContent='$'+margin.toFixed(2)
+  document.getElementById('mgPosition').textContent='$'+position.toFixed(0)
+  document.getElementById('mgLevActual').textContent='1:'+lev
+}
+
+// TARGET
+window.calcTarget=function(){
+  const capital=parseFloat(document.getElementById('tg-capital').value)||0
+  const goal=parseFloat(document.getElementById('tg-goal').value)||0
+  const win=parseFloat(document.getElementById('tg-win').value)||0
+  const wr=parseFloat(document.getElementById('tg-wr').value)||0
+  const loss=parseFloat(document.getElementById('tg-loss').value)||0
+  const daily=parseFloat(document.getElementById('tg-daily').value)||3
+  if(!capital||!goal||!win||!wr)return
+  const expPerTrade=(wr/100*win)-((100-wr)/100*loss)
+  if(expPerTrade<=0){document.getElementById('tgTrades').textContent='⚠️ توقع سالب';return}
+  const needed=goal-capital
+  const trades=Math.ceil(needed/expPerTrade)
+  const days=Math.ceil(trades/daily)
+  const months=(days/22).toFixed(1)
+  const monthly=expPerTrade*daily*22
+
+  document.getElementById('tgTrades').textContent=trades.toLocaleString()+' صفقة'
+  document.getElementById('tgDays').textContent=days.toLocaleString()+' يوم'
+  document.getElementById('tgMonths').textContent=months+' شهر'
+  document.getElementById('tgMonthly').textContent='+$'+monthly.toFixed(0)
+}
+
+// PLAN
+window.calcPlan=function(){
+  const capital=parseFloat(document.getElementById('plan-capital').value)||0
+  const rate=parseFloat(document.getElementById('plan-rate').value)||0
+  if(!capital||!rate)return
+  let c=capital,months=0
+  while(c<10000&&months<1200){c*=(1+rate/100);months++;}
+  const yearCapital=capital*Math.pow(1+rate/100,12)
+  const growth=(yearCapital-capital)/capital*100
+
+  document.getElementById('planMonths').textContent=c>=10000?months+' شهر':'يحتاج أكثر من 100 سنة'
+  document.getElementById('planYear').textContent='$'+yearCapital.toFixed(0)
+  document.getElementById('planGrowth').textContent='+'+growth.toFixed(1)+'%'
+
+  let judge='',color=''
+  if(rate<=5){judge='⚠️ بطيء';color='var(--gold)';}
+  else if(rate<=10){judge='✅ واقعي';color='var(--teal)';}
+  else if(rate<=20){judge='🔥 طموح';color='var(--green)';}
+  else{judge='🚨 خطر';color='#ff6b6b';}
+  document.getElementById('planJudge').textContent=judge
+  document.getElementById('planJudge').style.color=color
+
+  const msg=rate>20?'⚠️ ربح أكثر من 20% شهرياً صعب جداً ومحفوف بالمخاطر. ابدأ بهدف 5-10% شهرياً.':rate>=10?'💪 هدف طموح! يحتاج مهارة عالية وانضباط قوي.':'✅ هدف واقعي وقابل للتحقيق مع الانضباط والاستمرارية.'
+  document.getElementById('planMsg').textContent=msg
+}
+
+// TICKER
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0});tEl.innerHTML=buildT()},3000)
+</script>
+</body>
+</html>
+```

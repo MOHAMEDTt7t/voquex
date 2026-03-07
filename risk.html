@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — إدارة المخاطر</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;}
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;padding-bottom:50px;}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.page-title{font-size:1.3rem;font-weight:800;}
+.page-sub{font-size:.7rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+
+/* RISK DASHBOARD */
+.risk-dash{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.rdash{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;transition:all .3s;}
+.rdash:hover{transform:translateY(-3px);}
+.rdash::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.rdash:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.rdash:nth-child(2)::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.rdash:nth-child(3)::before{background:linear-gradient(90deg,var(--red),transparent);}
+.rdash:nth-child(4)::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.rdash-lbl{font-size:.6rem;color:#3a4f6e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.rdash-val{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:700;margin-bottom:3px;}
+.rdash-sub{font-size:.62rem;color:#3a4f6e;}
+.rdash-bar{height:3px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:8px;overflow:hidden;}
+.rdash-fill{height:100%;border-radius:2px;transition:width 1.2s ease;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;padding:20px;transition:border-color .3s;}
+.card:hover{border-color:rgba(0,245,212,.08);}
+.card-title{font-size:.88rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.card-sub{font-size:.62rem;color:#3a4f6e;margin-bottom:18px;font-family:'IBM Plex Mono',monospace;}
+
+/* INPUTS */
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.flbl{font-size:.68rem;color:#6b84a8;letter-spacing:.5px;}
+.finp,.fsel{padding:10px 12px;background:rgba(6,8,15,.8);border:1px solid rgba(26,37,64,.8);border-radius:9px;color:#e8f0fe;font-family:'IBM Plex Mono',monospace;font-size:.85rem;outline:none;transition:all .25s;width:100%;}
+.finp:focus,.fsel:focus{border-color:rgba(0,245,212,.3);box-shadow:0 0 0 3px rgba(0,245,212,.04);}
+.finp::placeholder{color:#3a4f6e;}
+.fsel option{background:#0f1525;}
+
+/* RESULT */
+.result-box{background:rgba(0,245,212,.03);border:1px solid rgba(0,245,212,.08);border-radius:12px;padding:16px;margin-top:12px;}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(26,37,64,.2);}
+.result-row:last-child{border-bottom:none;}
+.result-lbl{font-size:.72rem;color:#6b84a8;}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:700;}
+.calc-btn{width:100%;padding:11px;background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.08));border:1px solid rgba(0,245,212,.2);border-radius:10px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;margin-top:10px;}
+.calc-btn:hover{box-shadow:0 0 20px rgba(0,245,212,.12);transform:translateY(-1px);}
+
+/* DRAWDOWN TABLE */
+.dd-table{width:100%;border-collapse:collapse;}
+.dd-table th{padding:8px 12px;text-align:right;font-size:.6rem;color:#3a4f6e;font-weight:700;letter-spacing:1px;background:rgba(15,21,37,.6);}
+.dd-table td{padding:9px 12px;font-size:.78rem;border-bottom:1px solid rgba(26,37,64,.15);font-family:'IBM Plex Mono',monospace;}
+.dd-table tr:last-child td{border-bottom:none;}
+.dd-table tr:hover td{background:rgba(255,23,68,.02);}
+
+/* RULES */
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rule{background:rgba(15,21,37,.5);border:1px solid var(--border);border-radius:12px;padding:14px;transition:all .25s;cursor:pointer;}
+.rule:hover{border-color:rgba(0,245,212,.15);transform:translateY(-2px);}
+.rule-icon{font-size:1.4rem;margin-bottom:8px;}
+.rule-title{font-size:.78rem;font-weight:700;margin-bottom:4px;}
+.rule-desc{font-size:.68rem;color:#6b84a8;line-height:1.5;}
+.rule-badge{display:inline-block;font-size:.55rem;padding:2px 8px;border-radius:20px;margin-top:6px;font-family:'IBM Plex Mono',monospace;}
+.rule-badge.gold{background:rgba(255,184,0,.08);color:var(--gold);border:1px solid rgba(255,184,0,.15);}
+.rule-badge.teal{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.15);}
+.rule-badge.red{background:rgba(255,23,68,.08);color:#ff6b6b;border:1px solid rgba(255,23,68,.15);}
+.rule-badge.purple{background:rgba(170,0,255,.08);color:var(--purple);border:1px solid rgba(170,0,255,.15);}
+
+/* GAUGE */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0;}
+.gauge{width:160px;height:80px;position:relative;}
+.gauge-arc{fill:none;stroke-width:12;stroke-linecap:round;}
+.gauge-bg{stroke:rgba(255,255,255,.04);}
+.gauge-fill{transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1);}
+.gauge-val{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:700;text-anchor:middle;}
+.gauge-lbl{font-size:.6rem;fill:#3a4f6e;text-anchor:middle;}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .5s ease forwards;}
+.fu2{animation:fadeUp .5s .1s ease forwards;opacity:0;}
+.fu3{animation:fadeUp .5s .2s ease forwards;opacity:0;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item active">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-header fu">
+    <div>
+      <div class="page-title">إدارة المخاطر 🛡️</div>
+      <div class="page-sub">احمِ رأس مالك — البقاء أولاً</div>
+    </div>
+  </div>
+
+  <!-- RISK DASHBOARD -->
+  <div class="risk-dash fu2">
+    <div class="rdash">
+      <div class="rdash-lbl">مخاطرة اليوم</div>
+      <div class="rdash-val" id="rd0" style="color:var(--teal)">$0</div>
+      <div class="rdash-sub" id="rd0s">0% من رأس المال</div>
+      <div class="rdash-bar"><div class="rdash-fill" id="rdf0" style="background:var(--teal);width:0%"></div></div>
+    </div>
+    <div class="rdash">
+      <div class="rdash-lbl">مخاطرة الأسبوع</div>
+      <div class="rdash-val" id="rd1" style="color:var(--gold)">$0</div>
+      <div class="rdash-sub" id="rd1s">0% من رأس المال</div>
+      <div class="rdash-bar"><div class="rdash-fill" id="rdf1" style="background:var(--gold);width:0%"></div></div>
+    </div>
+    <div class="rdash">
+      <div class="rdash-lbl">Max Drawdown</div>
+      <div class="rdash-val" id="rd2" style="color:#ff6b6b">0%</div>
+      <div class="rdash-sub">أكبر انخفاض</div>
+      <div class="rdash-bar"><div class="rdash-fill" id="rdf2" style="background:#ff6b6b;width:0%"></div></div>
+    </div>
+    <div class="rdash">
+      <div class="rdash-lbl">صفقات خاسرة متتالية</div>
+      <div class="rdash-val" id="rd3" style="color:var(--purple)">0</div>
+      <div class="rdash-sub">أطول سلسلة خسارة</div>
+      <div class="rdash-bar"><div class="rdash-fill" id="rdf3" style="background:var(--purple);width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- CALCULATORS -->
+  <div class="grid-2 fu3">
+
+    <!-- LOT SIZE CALCULATOR -->
+    <div class="card">
+      <div class="card-title">🎯 حاسبة حجم الصفقة</div>
+      <div class="card-sub">احسب Lot Size المناسب لمخاطرتك</div>
+      <div class="inp-row">
+        <div class="fg">
+          <label class="flbl">رأس المال ($)</label>
+          <input class="finp" id="ls-capital" type="number" placeholder="10000" oninput="calcLotSize()">
+        </div>
+        <div class="fg">
+          <label class="flbl">نسبة المخاطرة (%)</label>
+          <input class="finp" id="ls-risk" type="number" placeholder="1" step="0.1" oninput="calcLotSize()">
+        </div>
+        <div class="fg">
+          <label class="flbl">Stop Loss (نقطة)</label>
+          <input class="finp" id="ls-sl" type="number" placeholder="20" oninput="calcLotSize()">
+        </div>
+        <div class="fg">
+          <label class="flbl">الزوج</label>
+          <select class="fsel" id="ls-pair" onchange="calcLotSize()">
+            <option value="forex">Forex (EURUSD...)</option>
+            <option value="gold">XAUUSD (ذهب)</option>
+            <option value="indices">مؤشرات (US30...)</option>
+            <option value="crypto">Crypto</option>
+          </select>
+        </div>
+      </div>
+      <div class="result-box" id="lsResult">
+        <div class="result-row"><span class="result-lbl">Lot Size الموصى به</span><span class="result-val" id="lsLot" style="color:var(--teal)">—</span></div>
+        <div class="result-row"><span class="result-lbl">قيمة المخاطرة</span><span class="result-val" id="lsRiskVal" style="color:#ff6b6b">—</span></div>
+        <div class="result-row"><span class="result-lbl">نسبة من رأس المال</span><span class="result-val" id="lsRiskPct" style="color:var(--gold)">—</span></div>
+      </div>
+    </div>
+
+    <!-- RR CALCULATOR -->
+    <div class="card">
+      <div class="card-title">⚖️ حاسبة Risk/Reward</div>
+      <div class="card-sub">احسب نسبة الربح للمخاطرة قبل الدخول</div>
+      <div class="inp-row">
+        <div class="fg">
+          <label class="flbl">سعر الدخول</label>
+          <input class="finp" id="rr-entry" type="number" step="any" placeholder="2345.00" oninput="calcRR()">
+        </div>
+        <div class="fg">
+          <label class="flbl">Stop Loss</label>
+          <input class="finp" id="rr-sl" type="number" step="any" placeholder="2330.00" oninput="calcRR()">
+        </div>
+        <div class="fg">
+          <label class="flbl">Take Profit</label>
+          <input class="finp" id="rr-tp" type="number" step="any" placeholder="2385.00" oninput="calcRR()">
+        </div>
+        <div class="fg">
+          <label class="flbl">رأس المال ($)</label>
+          <input class="finp" id="rr-capital" type="number" placeholder="10000" oninput="calcRR()">
+        </div>
+      </div>
+      <div class="result-box">
+        <div class="result-row"><span class="result-lbl">نسبة RR</span><span class="result-val" id="rrRatio" style="color:var(--teal)">—</span></div>
+        <div class="result-row"><span class="result-lbl">المخاطرة (نقطة)</span><span class="result-val" id="rrRisk" style="color:#ff6b6b">—</span></div>
+        <div class="result-row"><span class="result-lbl">الهدف (نقطة)</span><span class="result-val" id="rrReward" style="color:var(--green)">—</span></div>
+        <div class="result-row"><span class="result-lbl">الحكم</span><span class="result-val" id="rrJudge">—</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DRAWDOWN + GAUGE -->
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-title">📉 جدول الـ Drawdown</div>
+      <div class="card-sub">كم تحتاج لتعويض كل نسبة خسارة؟</div>
+      <table class="dd-table">
+        <thead><tr><th>خسارة %</th><th>رأس المال المتبقي</th><th>تحتاج ربح %</th><th>الخطورة</th></tr></thead>
+        <tbody>
+          <tr><td>5%</td><td>95%</td><td>5.3%</td><td style="color:var(--green)">✅ منخفضة</td></tr>
+          <tr><td>10%</td><td>90%</td><td>11.1%</td><td style="color:var(--green)">✅ منخفضة</td></tr>
+          <tr><td>20%</td><td>80%</td><td>25%</td><td style="color:var(--gold)">⚠️ متوسطة</td></tr>
+          <tr><td>30%</td><td>70%</td><td>42.9%</td><td style="color:var(--gold)">⚠️ متوسطة</td></tr>
+          <tr><td>40%</td><td>60%</td><td>66.7%</td><td style="color:#ff6b6b">🚨 عالية</td></tr>
+          <tr><td>50%</td><td>50%</td><td>100%</td><td style="color:#ff6b6b">🚨 خطر</td></tr>
+          <tr><td>70%</td><td>30%</td><td>233%</td><td style="color:#ff1744">💀 كارثي</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎰 حاسبة البقاء</div>
+      <div class="card-sub">كم صفقة خاسرة متتالية يتحمل رأس مالك؟</div>
+      <div class="inp-row">
+        <div class="fg">
+          <label class="flbl">رأس المال ($)</label>
+          <input class="finp" id="sv-capital" type="number" placeholder="10000" oninput="calcSurvival()">
+        </div>
+        <div class="fg">
+          <label class="flbl">مخاطرة لكل صفقة (%)</label>
+          <input class="finp" id="sv-risk" type="number" placeholder="2" step="0.1" oninput="calcSurvival()">
+        </div>
+        <div class="fg full">
+          <label class="flbl">حد الخسارة المقبول (%)</label>
+          <input class="finp" id="sv-limit" type="number" placeholder="20" oninput="calcSurvival()">
+        </div>
+      </div>
+      <div class="result-box">
+        <div class="result-row"><span class="result-lbl">صفقات خاسرة متتالية مقبولة</span><span class="result-val" id="svTrades" style="color:var(--teal)">—</span></div>
+        <div class="result-row"><span class="result-lbl">رأس المال بعد الحد</span><span class="result-val" id="svCapital" style="color:var(--gold)">—</span></div>
+        <div class="result-row"><span class="result-lbl">التوصية</span><span class="result-val" id="svAdvice" style="font-size:.72rem">—</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GOLDEN RULES -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">👑 قواعد إدارة المخاطر الذهبية</div>
+    <div class="card-sub">القواعد الأساسية لكل متداول محترف</div>
+    <div class="rules-grid">
+      <div class="rule">
+        <div class="rule-icon">1️⃣</div>
+        <div class="rule-title">قاعدة 1-2%</div>
+        <div class="rule-desc">لا تخاطر بأكثر من 1-2% من رأس مالك في صفقة واحدة. هذا يضمن بقاءك في اللعبة طويلاً.</div>
+        <span class="rule-badge gold">قاعدة ذهبية</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">2️⃣</div>
+        <div class="rule-title">RR لا يقل عن 1:2</div>
+        <div class="rule-desc">هدفك يجب أن يكون ضعف مخاطرتك على الأقل. هذا يعني ربحك مع 40% Win Rate فقط!</div>
+        <span class="rule-badge teal">أساسي</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">3️⃣</div>
+        <div class="rule-title">حد يومي للخسارة</div>
+        <div class="rule-desc">حدد خسارة يومية قصوى (3-5%) وأغلق الكمبيوتر لو وصلتها. لا استثناءات.</div>
+        <span class="rule-badge red">إلزامي</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">4️⃣</div>
+        <div class="rule-title">لا تحرك Stop Loss</div>
+        <div class="rule-desc">حدد SL قبل الدخول ولا تحركه للخسارة أبداً. تحريكه للربح فقط (Trailing Stop) مقبول.</div>
+        <span class="rule-badge red">مهم جداً</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">5️⃣</div>
+        <div class="rule-title">3 صفقات يومياً كحد أقصى</div>
+        <div class="rule-desc">أكثر الخسائر تأتي من الإفراط في التداول. الجودة أهم من الكمية دائماً.</div>
+        <span class="rule-badge purple">انضباط</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">6️⃣</div>
+        <div class="rule-title">استراحة بعد خسارتين</div>
+        <div class="rule-desc">خسارتين متتاليتين = توقف لساعتين على الأقل. الأسواق ستظل موجودة.</div>
+        <span class="rule-badge gold">نفسي</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">7️⃣</div>
+        <div class="rule-title">لا تضاعف بعد الخسارة</div>
+        <div class="rule-desc">Martingale يدمر الحسابات. كل صفقة لها نفس حجم المخاطرة بغض النظر عن السابقة.</div>
+        <span class="rule-badge red">تحذير</span>
+      </div>
+      <div class="rule">
+        <div class="rule-icon">8️⃣</div>
+        <div class="rule-title">سجّل كل صفقة</div>
+        <div class="rule-desc">المتداول الذي لا يسجل لا يتعلم. كل صفقة درس — الرابحة والخاسرة.</div>
+        <span class="rule-badge teal">تطوير</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null,trades=[]
+
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;}
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+
+async function load(){
+  const{data}=await sb.from('trades').select('*').eq('user_id',user.id).order('created_at',{ascending:true})
+  trades=data||[]
+  document.getElementById('navBadge').textContent=trades.length
+  buildDashboard()
+}
+
+function buildDashboard(){
+  if(!trades.length)return
+  const now=new Date()
+  const today=trades.filter(t=>{const d=new Date(t.created_at);return d.toDateString()===now.toDateString()})
+  const week=trades.filter(t=>{const d=new Date(t.created_at);const w=new Date(now);w.setDate(now.getDate()-7);return d>=w})
+
+  const todayLoss=Math.abs(today.filter(t=>t.pnl<0).reduce((s,t)=>s+(t.pnl||0),0))
+  const weekLoss=Math.abs(week.filter(t=>t.pnl<0).reduce((s,t)=>s+(t.pnl||0),0))
+
+  let peak=0,maxDD=0,running=0
+  trades.forEach(t=>{running+=(t.pnl||0);if(running>peak)peak=running;const dd=peak>0?(peak-running)/peak*100:0;if(dd>maxDD)maxDD=dd})
+
+  let maxL=0,curL=0
+  trades.forEach(t=>{if(t.result==='loss'){curL++;maxL=Math.max(maxL,curL);}else curL=0;})
+
+  document.getElementById('rd0').textContent='$'+todayLoss.toFixed(0)
+  document.getElementById('rd1').textContent='$'+weekLoss.toFixed(0)
+  document.getElementById('rd2').textContent=maxDD.toFixed(1)+'%'
+  document.getElementById('rd3').textContent=maxL
+
+  setTimeout(()=>{
+    document.getElementById('rdf0').style.width=Math.min(todayLoss/100*10,100)+'%'
+    document.getElementById('rdf1').style.width=Math.min(weekLoss/500*10,100)+'%'
+    document.getElementById('rdf2').style.width=Math.min(maxDD,100)+'%'
+    document.getElementById('rdf3').style.width=Math.min(maxL*10,100)+'%'
+  },400)
+}
+
+// حاسبة Lot Size
+window.calcLotSize=function(){
+  const capital=parseFloat(document.getElementById('ls-capital').value)||0
+  const risk=parseFloat(document.getElementById('ls-risk').value)||0
+  const sl=parseFloat(document.getElementById('ls-sl').value)||0
+  const pair=document.getElementById('ls-pair').value
+  if(!capital||!risk||!sl)return
+
+  const riskAmount=capital*risk/100
+  let pipValue=10 // forex standard
+  if(pair==='gold') pipValue=10
+  else if(pair==='indices') pipValue=1
+  else if(pair==='crypto') pipValue=1
+
+  const lotSize=riskAmount/(sl*pipValue)
+
+  document.getElementById('lsLot').textContent=lotSize.toFixed(2)+' Lots'
+  document.getElementById('lsLot').style.color=lotSize<=1?'var(--teal)':lotSize<=2?'var(--gold)':'#ff6b6b'
+  document.getElementById('lsRiskVal').textContent='$'+riskAmount.toFixed(2)
+  document.getElementById('lsRiskPct').textContent=risk+'%'
+  document.getElementById('lsRiskPct').style.color=risk<=1?'var(--green)':risk<=2?'var(--teal)':risk<=3?'var(--gold)':'#ff6b6b'
+}
+
+// حاسبة RR
+window.calcRR=function(){
+  const entry=parseFloat(document.getElementById('rr-entry').value)||0
+  const sl=parseFloat(document.getElementById('rr-sl').value)||0
+  const tp=parseFloat(document.getElementById('rr-tp').value)||0
+  if(!entry||!sl||!tp)return
+
+  const risk=Math.abs(entry-sl)
+  const reward=Math.abs(tp-entry)
+  const rr=risk>0?reward/risk:0
+
+  document.getElementById('rrRisk').textContent=risk.toFixed(5)+' pts'
+  document.getElementById('rrReward').textContent=reward.toFixed(5)+' pts'
+  document.getElementById('rrRatio').textContent='1:'+rr.toFixed(2)
+  document.getElementById('rrRatio').style.color=rr>=2?'var(--green)':rr>=1?'var(--gold)':'#ff6b6b'
+
+  let judge=''
+  if(rr>=3){judge='🔥 ممتاز!';document.getElementById('rrJudge').style.color='var(--green)';}
+  else if(rr>=2){judge='✅ جيد';document.getElementById('rrJudge').style.color='var(--teal)';}
+  else if(rr>=1){judge='⚠️ مقبول';document.getElementById('rrJudge').style.color='var(--gold)';}
+  else{judge='❌ سيء — لا تدخل';document.getElementById('rrJudge').style.color='#ff6b6b';}
+  document.getElementById('rrJudge').textContent=judge
+}
+
+// حاسبة البقاء
+window.calcSurvival=function(){
+  const capital=parseFloat(document.getElementById('sv-capital').value)||0
+  const risk=parseFloat(document.getElementById('sv-risk').value)||0
+  const limit=parseFloat(document.getElementById('sv-limit').value)||0
+  if(!capital||!risk||!limit)return
+
+  const maxLoss=capital*limit/100
+  const lossPerTrade=capital*risk/100
+  const trades=Math.floor(maxLoss/lossPerTrade)
+  const remaining=capital-maxLoss
+
+  document.getElementById('svTrades').textContent=trades+' صفقة'
+  document.getElementById('svTrades').style.color=trades>=10?'var(--green)':trades>=5?'var(--gold)':'#ff6b6b'
+  document.getElementById('svCapital').textContent='$'+remaining.toFixed(0)
+
+  let advice=''
+  if(risk<=1)advice='✅ ممتاز! مخاطرة منخفضة'
+  else if(risk<=2)advice='👍 جيد — استراتيجية متوازنة'
+  else if(risk<=3)advice='⚠️ مرتفع قليلاً — انتبه'
+  else advice='🚨 خطر! قلل المخاطرة لأقل من 2%'
+  document.getElementById('svAdvice').textContent=advice
+
+  const color=risk<=1?'var(--green)':risk<=2?'var(--teal)':risk<=3?'var(--gold)':'#ff6b6b'
+  document.getElementById('svAdvice').style.color=color
+}
+
+// Ticker
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0});tEl.innerHTML=buildT()},3000)
+
+load()
+</script>
+</body>
+</html>

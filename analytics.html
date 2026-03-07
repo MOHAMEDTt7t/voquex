@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — الأداء والتحليلات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;}
+
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;padding-bottom:50px;}
+
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.page-title{font-size:1.3rem;font-weight:800;}
+.page-sub{font-size:.7rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.period-btns{display:flex;gap:6px;}
+.period-btn{padding:6px 14px;border-radius:20px;font-size:.72rem;background:rgba(9,12,24,.8);border:1px solid var(--border);color:#3a4f6e;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;}
+.period-btn.on{background:rgba(0,245,212,.06);border-color:rgba(0,245,212,.2);color:var(--teal);}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+.kpi{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:14px;padding:14px;position:relative;overflow:hidden;cursor:pointer;transition:all .35s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--green),transparent);}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.kpi:nth-child(5)::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.kpi:nth-child(6)::before{background:linear-gradient(90deg,var(--red),transparent);}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.kpi-glow{position:absolute;width:60px;height:60px;border-radius:50%;filter:blur(20px);opacity:.07;top:-5px;left:-5px;transition:opacity .3s;}
+.kpi:hover .kpi-glow{opacity:.15;}
+.kpi-lbl{font-size:.58rem;color:#3a4f6e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:700;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:.58rem;color:#3a4f6e;}
+
+/* CARDS */
+.row-2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.row-2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;padding:20px;transition:border-color .3s;}
+.card:hover{border-color:rgba(0,245,212,.08);}
+.card-title{font-size:.85rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:7px;}
+.card-sub{font-size:.62rem;color:#3a4f6e;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+
+/* STREAK */
+.streak-row{display:flex;gap:10px;margin-bottom:14px;}
+.streak-card{flex:1;background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;transition:all .3s;}
+.streak-card:hover{transform:translateY(-3px);}
+.streak-num{font-family:'IBM Plex Mono',monospace;font-size:2.5rem;font-weight:700;line-height:1;margin-bottom:4px;}
+.streak-lbl{font-size:.65rem;color:#3a4f6e;margin-bottom:8px;}
+.streak-bar{height:4px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.04);}
+.streak-fill{height:100%;border-radius:2px;transition:width 1.5s cubic-bezier(.34,1.56,.64,1);}
+
+/* PAIRS TABLE */
+.pairs-table{width:100%;border-collapse:collapse;}
+.pairs-table th{padding:9px 12px;text-align:right;font-size:.58rem;color:#3a4f6e;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(15,21,37,.6);}
+.pairs-table td{padding:10px 12px;font-size:.78rem;border-bottom:1px solid rgba(26,37,64,.15);}
+.pairs-table tr:last-child td{border-bottom:none;}
+.pairs-table tr{transition:background .2s;}
+.pairs-table tr:hover td{background:rgba(0,245,212,.01);}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:.72rem;}
+.wr-bar{height:4px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:4px;overflow:hidden;}
+.wr-fill{height:100%;border-radius:2px;background:var(--green);transition:width 1.2s ease;}
+
+/* BEST/WORST */
+.trade-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:9px;margin-bottom:5px;transition:all .2s;}
+.trade-row:hover{transform:translateX(-3px);}
+.trade-row.best{background:rgba(0,230,118,.04);border:1px solid rgba(0,230,118,.08);}
+.trade-row.worst{background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.08);}
+.trade-pair{font-size:.78rem;font-weight:700;}
+.trade-pnl{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;}
+
+/* MOOD */
+.mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mood-item{background:rgba(15,21,37,.4);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:all .2s;}
+.mood-item:hover{border-color:rgba(0,245,212,.1);}
+.mood-icon{font-size:1.2rem;}
+.mood-info{flex:1;}
+.mood-name{font-size:.72rem;font-weight:700;margin-bottom:2px;}
+.mood-wr{font-size:.62rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;}
+.mood-bar-wrap{height:3px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:4px;overflow:hidden;}
+.mood-bar-fill{height:100%;border-radius:2px;transition:width 1.2s ease;}
+
+/* SESSION */
+.session-grid{display:flex;flex-direction:column;gap:8px;}
+.session-item{background:rgba(15,21,37,.4);border:1px solid var(--border);border-radius:10px;padding:12px;transition:all .2s;}
+.session-item:hover{border-color:rgba(0,245,212,.1);transform:translateX(-3px);}
+.session-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.session-name{font-size:.75rem;font-weight:700;}
+.session-pnl{font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:700;}
+.session-bar-wrap{height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden;}
+.session-bar-fill{height:100%;border-radius:2px;transition:width 1.2s ease;}
+.session-stats{display:flex;gap:12px;margin-top:5px;}
+.session-stat{font-size:.6rem;color:#3a4f6e;}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+
+.empty{text-align:center;padding:40px;color:#3a4f6e;font-size:.82rem;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .5s ease forwards;}
+.fade-up-2{animation:fadeUp .5s ease .1s forwards;opacity:0;}
+.fade-up-3{animation:fadeUp .5s ease .2s forwards;opacity:0;}
+@keyframes countUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.count-anim{animation:countUp .5s ease forwards;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item active">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="page-header fade-up">
+    <div>
+      <div class="page-title">الأداء والتحليلات 📈</div>
+      <div class="page-sub" id="dateSub">تحليل شامل لأدائك</div>
+    </div>
+    <div class="period-btns">
+      <button class="period-btn on" onclick="setPeriod('all',this)">الكل</button>
+      <button class="period-btn" onclick="setPeriod('month',this)">الشهر</button>
+      <button class="period-btn" onclick="setPeriod('week',this)">الأسبوع</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid fade-up-2">
+    <div class="kpi"><div class="kpi-glow" style="background:var(--teal)"></div><div class="kpi-lbl">إجمالي P&L</div><div class="kpi-val" id="k0" style="color:var(--teal)">$0</div><div class="kpi-sub" id="k0s">—</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--green)"></div><div class="kpi-lbl">Win Rate</div><div class="kpi-val" id="k1" style="color:var(--green)">0%</div><div class="kpi-sub" id="k1s">—</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--blue)"></div><div class="kpi-lbl">Profit Factor</div><div class="kpi-val" id="k2" style="color:#82b1ff">0.00</div><div class="kpi-sub">ربح ÷ خسارة</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--purple)"></div><div class="kpi-lbl">Sharpe Ratio</div><div class="kpi-val" id="k3" style="color:var(--purple)">0.00</div><div class="kpi-sub">جودة الأداء</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--gold)"></div><div class="kpi-lbl">متوسط الربح</div><div class="kpi-val" id="k4" style="color:var(--gold)">$0</div><div class="kpi-sub">لكل صفقة رابحة</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div><div class="kpi-lbl">متوسط الخسارة</div><div class="kpi-val" id="k5" style="color:#ff6b6b">$0</div><div class="kpi-sub">لكل صفقة خاسرة</div></div>
+  </div>
+
+  <!-- STREAK -->
+  <div class="streak-row fade-up-3">
+    <div class="streak-card">
+      <div class="streak-num" style="color:var(--green)" id="s0">0</div>
+      <div class="streak-lbl">أطول سلسلة ربح 🔥</div>
+      <div class="streak-bar"><div class="streak-fill" id="sf0" style="width:0%;background:var(--green)"></div></div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:#ff6b6b" id="s1">0</div>
+      <div class="streak-lbl">أطول سلسلة خسارة ❌</div>
+      <div class="streak-bar"><div class="streak-fill" id="sf1" style="width:0%;background:#ff6b6b"></div></div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:var(--teal)" id="s2">0</div>
+      <div class="streak-lbl">السلسلة الحالية ⚡</div>
+      <div class="streak-bar"><div class="streak-fill" id="sf2" style="width:0%;background:var(--teal)"></div></div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:var(--gold)" id="s3">0%</div>
+      <div class="streak-lbl">Max Drawdown 📉</div>
+      <div class="streak-bar"><div class="streak-fill" id="sf3" style="width:0%;background:var(--gold)"></div></div>
+    </div>
+  </div>
+
+  <!-- BALANCE + PAIRS -->
+  <div class="row-2">
+    <div class="card">
+      <div class="card-title">📈 منحنى الرصيد</div>
+      <div class="card-sub">تطور رأس المال مع المتوسط المتحرك</div>
+      <canvas id="balanceChart" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 توزيع الأزواج</div>
+      <div class="card-sub">حسب عدد الصفقات</div>
+      <canvas id="pairsDonut" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- MONTHLY + DAYS + HOURS -->
+  <div class="row-3">
+    <div class="card">
+      <div class="card-title">📅 الأداء الشهري</div>
+      <div class="card-sub">P&L لكل شهر</div>
+      <canvas id="monthlyChart" height="140"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🗓️ أيام الأسبوع</div>
+      <div class="card-sub">أفضل وأسوأ الأيام</div>
+      <canvas id="daysChart" height="140"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">⏰ أوقات التداول</div>
+      <div class="card-sub">توزيع الصفقات بالساعة</div>
+      <canvas id="hoursChart" height="140"></canvas>
+    </div>
+  </div>
+
+  <!-- PAIRS TABLE + BEST/WORST -->
+  <div class="row-2b">
+    <div class="card">
+      <div class="card-title">💹 تحليل الأزواج</div>
+      <div class="card-sub">أداء تفصيلي لكل زوج</div>
+      <div id="pairsTableWrap"><div class="empty">جارٍ التحميل...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 أفضل وأسوأ الصفقات</div>
+      <div class="card-sub">Top 5 & Worst 5</div>
+      <div style="margin-bottom:10px;font-size:.7rem;color:var(--green);font-family:'IBM Plex Mono',monospace;">▲ أفضل 5</div>
+      <div id="bestTrades"></div>
+      <div style="margin:10px 0;font-size:.7rem;color:#ff6b6b;font-family:'IBM Plex Mono',monospace;">▼ أسوأ 5</div>
+      <div id="worstTrades"></div>
+    </div>
+  </div>
+
+  <!-- SESSION + MOOD -->
+  <div class="row-2b">
+    <div class="card">
+      <div class="card-title">🌍 تحليل الجلسات</div>
+      <div class="card-sub">أداءك في كل جلسة تداول</div>
+      <div class="session-grid" id="sessionGrid"><div class="empty">جارٍ التحميل...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧠 تأثير الحالة النفسية</div>
+      <div class="card-sub">كيف تؤثر مشاعرك على أداءك</div>
+      <div class="mood-grid" id="moodGrid"><div class="empty" style="grid-column:1/-1">جارٍ التحميل...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null,allTrades=[],period='all',charts={}
+
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;}
+
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+
+// تحميل
+async function load(){
+  const{data,error}=await sb.from('trades').select('*').eq('user_id',user.id).order('created_at',{ascending:true})
+  if(error)return
+  allTrades=data||[]
+  document.getElementById('navBadge').textContent=allTrades.length
+  render()
+}
+
+window.setPeriod=function(p,btn){
+  period=p
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  render()
+}
+
+function getFiltered(){
+  const now=new Date()
+  return allTrades.filter(t=>{
+    const d=new Date(t.created_at)
+    if(period==='week'){const w=new Date(now);w.setDate(now.getDate()-7);return d>=w;}
+    if(period==='month'){return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}
+    return true
+  })
+}
+
+function render(){
+  const trades=getFiltered()
+  calcKPIs(trades)
+  calcStreaks(trades)
+  renderCharts(trades)
+  renderPairsTable(trades)
+  renderBestWorst(trades)
+  renderSessions(trades)
+  renderMood(trades)
+}
+
+// KPIs دقيقة
+function calcKPIs(t){
+  if(!t.length)return
+  const pnl=t.reduce((s,x)=>s+(x.pnl||0),0)
+  const wins=t.filter(x=>x.result==='win')
+  const losses=t.filter(x=>x.result==='loss')
+  const wr=t.length?wins.length/t.length*100:0
+  const gp=wins.reduce((s,x)=>s+(x.pnl||0),0)
+  const gl=Math.abs(losses.reduce((s,x)=>s+(x.pnl||0),0))
+  const pf=gl>0?gp/gl:gp>0?999:0
+  const avgWin=wins.length?gp/wins.length:0
+  const avgLoss=losses.length?gl/losses.length:0
+
+  // Sharpe Ratio
+  const pnls=t.map(x=>x.pnl||0)
+  const mean=pnls.reduce((s,v)=>s+v,0)/pnls.length
+  const std=Math.sqrt(pnls.reduce((s,v)=>s+Math.pow(v-mean,2),0)/pnls.length)||1
+  const sharpe=(mean/std*Math.sqrt(252)).toFixed(2)
+
+  setKPI('k0',(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(0),pnl>=0?'var(--teal)':'#ff6b6b')
+  document.getElementById('k0s').textContent=wins.length+' ربح / '+losses.length+' خسارة'
+  setKPI('k1',wr.toFixed(1)+'%','var(--green)')
+  document.getElementById('k1s').textContent='من '+t.length+' صفقة'
+  setKPI('k2',pf>99?'∞':pf.toFixed(2),'#82b1ff')
+  setKPI('k3',sharpe,'var(--purple)')
+  setKPI('k4','$'+avgWin.toFixed(0),'var(--gold)')
+  setKPI('k5','$'+avgLoss.toFixed(0),'#ff6b6b')
+}
+
+function setKPI(id,val,color){
+  const el=document.getElementById(id)
+  el.style.color=color
+  el.classList.remove('count-anim')
+  void el.offsetWidth
+  el.textContent=val
+  el.classList.add('count-anim')
+}
+
+// Streaks
+function calcStreaks(t){
+  if(!t.length)return
+  let maxW=0,maxL=0,curW=0,curL=0,cur=0
+  t.forEach(x=>{
+    if(x.result==='win'){curW++;curL=0;maxW=Math.max(maxW,curW);cur=curW;}
+    else{curL++;curW=0;maxL=Math.max(maxL,curL);cur=-curL;}
+  })
+  document.getElementById('s0').textContent=maxW
+  document.getElementById('s1').textContent=maxL
+  document.getElementById('s2').textContent=cur>0?'+'+cur:cur
+  document.getElementById('s2').style.color=cur>0?'var(--green)':cur<0?'#ff6b6b':'var(--teal)'
+
+  // Max Drawdown
+  let peak=0,maxDD=0,running=0
+  t.forEach(x=>{running+=(x.pnl||0);if(running>peak)peak=running;const dd=peak>0?((peak-running)/peak)*100:0;if(dd>maxDD)maxDD=dd})
+  document.getElementById('s3').textContent=maxDD.toFixed(1)+'%'
+
+  // Bars
+  setTimeout(()=>{
+    document.getElementById('sf0').style.width=Math.min(maxW*10,100)+'%'
+    document.getElementById('sf1').style.width=Math.min(maxL*10,100)+'%'
+    document.getElementById('sf2').style.width=Math.min(Math.abs(cur)*10,100)+'%'
+    document.getElementById('sf2').style.background=cur>0?'var(--green)':'#ff6b6b'
+    document.getElementById('sf3').style.width=Math.min(maxDD,100)+'%'
+  },300)
+}
+
+// Charts
+function renderCharts(t){
+  const cBase={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(9,12,24,.95)',titleColor:'#e8f0fe',bodyColor:'#6b84a8',borderColor:'rgba(0,245,212,.1)',borderWidth:1}},scales:{x:{grid:{color:'rgba(26,37,64,.25)',drawBorder:false},ticks:{color:'#3a4f6e',font:{size:8}}},y:{grid:{color:'rgba(26,37,64,.25)',drawBorder:false},ticks:{color:'#3a4f6e',font:{size:8}}}}}
+
+  // Balance Curve + MA
+  let run=0
+  const bData=t.map(x=>{run+=(x.pnl||0);return+run.toFixed(2)})
+  const bLabels=t.map((_,i)=>'#'+(i+1))
+  const ma=bData.map((_,i)=>{const s=bData.slice(Math.max(0,i-4),i+1);return+(s.reduce((a,b)=>a+b,0)/s.length).toFixed(2)})
+
+  if(charts.balance)charts.balance.destroy()
+  charts.balance=new Chart(document.getElementById('balanceChart'),{
+    type:'line',
+    data:{labels:bLabels.length?bLabels:['بداية'],datasets:[
+      {data:bData.length?bData:[0],borderColor:'#00f5d4',borderWidth:2,fill:true,backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'rgba(0,245,212,.12)');g.addColorStop(1,'rgba(0,245,212,0)');return g;},tension:.4,pointRadius:0},
+      {data:ma.length?ma:[0],borderColor:'rgba(255,184,0,.4)',borderWidth:1.5,borderDash:[4,4],fill:false,tension:.4,pointRadius:0,label:'MA(5)'}
+    ]},
+    options:{...cBase,plugins:{...cBase.plugins,legend:{display:true,position:'top',labels:{color:'#6b84a8',font:{size:9},padding:10}}}}
+  })
+
+  // Pairs Donut
+  const pc={}
+  t.forEach(x=>{pc[x.pair]=(pc[x.pair]||0)+1})
+  const pL=Object.keys(pc),pV=Object.values(pc)
+  const pC=['#00f5d4','#2979ff','#aa00ff','#ffb800','#00e676','#ff6b6b','#82b1ff','#ff80ab']
+
+  if(charts.pairs)charts.pairs.destroy()
+  charts.pairs=new Chart(document.getElementById('pairsDonut'),{
+    type:'doughnut',
+    data:{labels:pL.length?pL:['لا يوجد'],datasets:[{data:pV.length?pV:[1],backgroundColor:pC,borderColor:'rgba(9,12,24,.8)',borderWidth:2}]},
+    options:{...cBase,plugins:{...cBase.plugins,legend:{display:true,position:'bottom',labels:{color:'#6b84a8',font:{size:9},padding:8}}},scales:{}}
+  })
+
+  // Monthly
+  const monthly={}
+  t.forEach(x=>{const d=new Date(x.created_at);const k=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');monthly[k]=(monthly[k]||0)+(x.pnl||0)})
+  const mKeys=Object.keys(monthly).sort()
+  const mVals=mKeys.map(k=>+monthly[k].toFixed(0))
+
+  if(charts.monthly)charts.monthly.destroy()
+  charts.monthly=new Chart(document.getElementById('monthlyChart'),{
+    type:'bar',
+    data:{labels:mKeys.length?mKeys:['—'],datasets:[{data:mVals.length?mVals:[0],backgroundColor:mVals.map(v=>v>=0?'rgba(0,230,118,.4)':'rgba(255,23,68,.4)'),borderColor:mVals.map(v=>v>=0?'#00e676':'#ff1744'),borderWidth:1,borderRadius:4}]},
+    options:{...cBase}
+  })
+
+  // Days
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
+  const dp=[0,0,0,0,0,0,0]
+  t.forEach(x=>{dp[new Date(x.created_at).getDay()]+=(x.pnl||0)})
+
+  if(charts.days)charts.days.destroy()
+  charts.days=new Chart(document.getElementById('daysChart'),{
+    type:'bar',
+    data:{labels:days,datasets:[{data:dp,backgroundColor:dp.map(v=>v>=0?'rgba(0,230,118,.35)':'rgba(255,23,68,.35)'),borderColor:dp.map(v=>v>=0?'#00e676':'#ff1744'),borderWidth:1,borderRadius:3}]},
+    options:{...cBase}
+  })
+
+  // Hours
+  const hp=Array(24).fill(0)
+  t.forEach(x=>{hp[new Date(x.created_at).getHours()]+=(x.pnl||0)})
+
+  if(charts.hours)charts.hours.destroy()
+  charts.hours=new Chart(document.getElementById('hoursChart'),{
+    type:'bar',
+    data:{labels:Array.from({length:24},(_,i)=>i+'h'),datasets:[{data:hp,backgroundColor:'rgba(41,121,255,.35)',borderColor:'#2979ff',borderWidth:1,borderRadius:2}]},
+    options:{...cBase}
+  })
+}
+
+// Pairs Table
+function renderPairsTable(t){
+  const wrap=document.getElementById('pairsTableWrap')
+  if(!t.length){wrap.innerHTML='<div class="empty">لا توجد بيانات</div>';return}
+  const pairs={}
+  t.forEach(x=>{
+    if(!pairs[x.pair])pairs[x.pair]={total:0,wins:0,pnl:0}
+    pairs[x.pair].total++
+    if(x.result==='win')pairs[x.pair].wins++
+    pairs[x.pair].pnl+=(x.pnl||0)
+  })
+  const sorted=Object.entries(pairs).sort((a,b)=>b[1].pnl-a[1].pnl)
+  wrap.innerHTML=`<table class="pairs-table">
+    <thead><tr><th>الزوج</th><th>صفقات</th><th>Win%</th><th>P&L</th></tr></thead>
+    <tbody>${sorted.map(([pair,d])=>{
+      const wr=(d.wins/d.total*100)
+      return`<tr>
+        <td style="font-weight:700">${pair}</td>
+        <td class="mono">${d.total}</td>
+        <td><div style="font-size:.72rem;font-family:'IBM Plex Mono',monospace;color:${wr>=50?'var(--green)':'#ff6b6b'}">${wr.toFixed(0)}%</div><div class="wr-bar"><div class="wr-fill" style="width:${wr}%;background:${wr>=50?'var(--green)':'#ff6b6b'}"></div></div></td>
+        <td class="mono" style="color:${d.pnl>=0?'var(--green)':'#ff6b6b'}">${d.pnl>=0?'+':''}$${d.pnl.toFixed(0)}</td>
+      </tr>`}).join('')}
+    </tbody>
+  </table>`
+}
+
+// Best/Worst
+function renderBestWorst(t){
+  const sorted=[...t].sort((a,b)=>(b.pnl||0)-(a.pnl||0))
+  const best=sorted.slice(0,5)
+  const worst=sorted.slice(-5).reverse()
+
+  document.getElementById('bestTrades').innerHTML=best.map(t=>`
+    <div class="trade-row best">
+      <div><div class="trade-pair">${t.pair}</div><div style="font-size:.62rem;color:#3a4f6e">${new Date(t.created_at).toLocaleDateString('ar')}</div></div>
+      <div class="trade-pnl" style="color:var(--green)">+$${t.pnl}</div>
+    </div>`).join('') || '<div class="empty">—</div>'
+
+  document.getElementById('worstTrades').innerHTML=worst.map(t=>`
+    <div class="trade-row worst">
+      <div><div class="trade-pair">${t.pair}</div><div style="font-size:.62rem;color:#3a4f6e">${new Date(t.created_at).toLocaleDateString('ar')}</div></div>
+      <div class="trade-pnl" style="color:#ff6b6b">$${t.pnl}</div>
+    </div>`).join('') || '<div class="empty">—</div>'
+}
+
+// Sessions
+function renderSessions(t){
+  const sessions={london:{name:'🇬🇧 London',trades:[],color:'#2979ff'},newyork:{name:'🇺🇸 New York',trades:[],color:'#00f5d4'},tokyo:{name:'🇯🇵 Tokyo',trades:[],color:'#ffb800'},sydney:{name:'🇦🇺 Sydney',trades:[],color:'#00e676'}}
+  t.forEach(x=>{if(x.session&&sessions[x.session])sessions[x.session].trades.push(x)})
+  const maxPnl=Math.max(...Object.values(sessions).map(s=>Math.abs(s.trades.reduce((a,b)=>a+(b.pnl||0),0)))||[1])
+
+  document.getElementById('sessionGrid').innerHTML=Object.entries(sessions).map(([_,s])=>{
+    const pnl=s.trades.reduce((a,b)=>a+(b.pnl||0),0)
+    const wr=s.trades.length?s.trades.filter(x=>x.result==='win').length/s.trades.length*100:0
+    return`<div class="session-item">
+      <div class="session-header">
+        <div class="session-name">${s.name}</div>
+        <div class="session-pnl" style="color:${pnl>=0?'var(--green)':'#ff6b6b'}">${pnl>=0?'+':''}$${pnl.toFixed(0)}</div>
+      </div>
+      <div class="session-bar-wrap"><div class="session-bar-fill" style="width:${maxPnl?Math.abs(pnl)/maxPnl*100:0}%;background:${s.color}"></div></div>
+      <div class="session-stats">
+        <span class="session-stat">${s.trades.length} صفقة</span>
+        <span class="session-stat" style="color:${wr>=50?'var(--green)':'#ff6b6b'}">${wr.toFixed(0)}% win</span>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// Mood
+function renderMood(t){
+  const moods={confident:{name:'واثق',icon:'😎',trades:[]},disciplined:{name:'منضبط',icon:'🎯',trades:[]},neutral:{name:'محايد',icon:'😐',trades:[]},anxious:{name:'قلق',icon:'😰',trades:[]},fomo:{name:'FOMO',icon:'😱',trades:[]},revenge:{name:'Revenge',icon:'😤',trades:[]}}
+  t.forEach(x=>{if(x.mood&&moods[x.mood])moods[x.mood].trades.push(x)})
+
+  document.getElementById('moodGrid').innerHTML=Object.entries(moods).map(([_,m])=>{
+    const wr=m.trades.length?m.trades.filter(x=>x.result==='win').length/m.trades.length*100:0
+    const pnl=m.trades.reduce((a,b)=>a+(b.pnl||0),0)
+    return`<div class="mood-item">
+      <div class="mood-icon">${m.icon}</div>
+      <div class="mood-info">
+        <div class="mood-name">${m.name} <span style="font-size:.6rem;color:#3a4f6e">(${m.trades.length})</span></div>
+        <div class="mood-wr" style="color:${wr>=50?'var(--green)':'#ff6b6b'}">${m.trades.length?wr.toFixed(0)+'% win • $'+pnl.toFixed(0):'لا توجد بيانات'}</div>
+        <div class="mood-bar-wrap"><div class="mood-bar-fill" style="width:${wr}%;background:${wr>=50?'var(--green)':'#ff6b6b'}"></div></div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// Ticker
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true},{p:'USDJPY',v:149.82,u:false}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0});tEl.innerHTML=buildT()},3000)
+
+load()
+</script>
+</body>
+</html>

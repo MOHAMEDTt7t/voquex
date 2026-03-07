@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — منصة التداول الذكية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--panel:rgba(9,12,24,.95);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;height:100vh;overflow:hidden;position:relative;}
+canvas{position:fixed;inset:0;z-index:0;}
+
+/* TICKER */
+.ticker{position:fixed;top:0;left:0;right:0;height:28px;background:rgba(6,8,15,.98);border-bottom:1px solid rgba(0,245,212,.06);display:flex;align-items:center;overflow:hidden;z-index:200;}
+.ticker-track{display:flex;gap:28px;animation:tick 40s linear infinite;white-space:nowrap;padding:0 20px;}
+@keyframes tick{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.6rem;display:flex;gap:5px;align-items:center;}
+.tick-pair{color:#3a4f6e;}
+.tick-up{color:#00e676;}
+.tick-down{color:#ff6b6b;}
+
+/* SCREENS */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:28px;opacity:0;pointer-events:none;transition:opacity .6s ease,transform .6s ease;}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)!important;}
+.screen.slide-left{transform:translateX(-60px);}
+.screen.slide-right{transform:translateX(60px);}
+
+/* ONBOARDING */
+.ob-wrap{max-width:480px;width:100%;padding:24px;text-align:center;}
+.ob-icon{font-size:4rem;margin-bottom:20px;animation:iconFloat 3s ease-in-out infinite;}
+@keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.ob-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,212,.06);border:1px solid rgba(0,245,212,.12);border-radius:30px;padding:5px 16px;font-size:.65rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;letter-spacing:2px;margin-bottom:20px;}
+.ob-title{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1.15;margin-bottom:14px;}
+.ob-desc{font-size:.95rem;color:#6b84a8;line-height:1.8;margin-bottom:32px;max-width:380px;margin-inline:auto;}
+.ob-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+.ob-feat{background:rgba(15,21,37,.6);border:1px solid rgba(26,37,64,.6);border-radius:12px;padding:14px;text-align:right;}
+.ob-feat-icon{font-size:1.2rem;margin-bottom:6px;}
+.ob-feat-title{font-size:.8rem;font-weight:700;margin-bottom:3px;}
+.ob-feat-sub{font-size:.68rem;color:#3a4f6e;}
+
+/* DOTS */
+.ob-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.1);transition:all .3s;cursor:pointer;}
+.dot.active{width:24px;background:var(--teal);}
+
+/* BUTTONS */
+.btn-next{padding:14px 40px;background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(41,121,255,.12));border:1px solid rgba(0,245,212,.25);border-radius:30px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
+.btn-next:hover{box-shadow:0 0 30px rgba(0,245,212,.15);transform:translateY(-2px);}
+.btn-skip{position:fixed;top:36px;left:20px;font-size:.75rem;color:#3a4f6e;cursor:pointer;transition:color .2s;z-index:300;background:none;border:none;font-family:'Tajawal',sans-serif;}
+.btn-skip:hover{color:var(--teal);}
+
+/* LOGIN */
+.login-wrap{max-width:400px;width:100%;padding:20px;}
+.login-logo{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:5px;text-align:center;margin-bottom:2px;}
+.login-sub{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:#3a4f6e;letter-spacing:3px;text-align:center;margin-bottom:20px;}
+.card{background:rgba(9,12,24,.94);border:1px solid rgba(0,245,212,.07);border-radius:20px;padding:26px;backdrop-filter:blur(40px);box-shadow:0 0 100px rgba(0,0,0,.7),0 0 40px rgba(0,245,212,.03);}
+.tabs{display:flex;gap:8px;margin-bottom:18px;}
+.tab{flex:1;padding:9px;background:transparent;border:1px solid rgba(26,37,64,.7);border-radius:10px;color:#3a4f6e;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .25s;}
+.tab.active{background:rgba(0,245,212,.06);border-color:rgba(0,245,212,.2);color:var(--teal);}
+.msg{padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:12px;display:none;}
+.msg.err{background:rgba(255,23,68,.07);border:1px solid rgba(255,23,68,.18);color:#ff6b6b;display:block;}
+.msg.ok{background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.18);color:#00e676;display:block;}
+.lbl{font-size:.68rem;color:#6b84a8;margin-bottom:5px;display:block;letter-spacing:.5px;}
+.inp-wrap{position:relative;margin-bottom:11px;}
+.inp{width:100%;padding:11px 14px;background:rgba(6,8,15,.7);border:1px solid rgba(26,37,64,.8);border-radius:10px;color:#e8f0fe;font-family:'Tajawal',sans-serif;font-size:.85rem;outline:none;transition:all .25s;}
+.inp:focus{border-color:rgba(0,245,212,.28);box-shadow:0 0 0 3px rgba(0,245,212,.04);}
+.inp::placeholder{color:#3a4f6e;}
+.inp-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#3a4f6e;font-size:.85rem;transition:color .2s;border:none;background:none;}
+.inp-icon:hover{color:var(--teal);}
+.row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.remember{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#3a4f6e;cursor:pointer;}
+.remember input{accent-color:var(--teal);}
+.forgot{font-size:.72rem;color:#3a4f6e;cursor:pointer;transition:color .2s;background:none;border:none;font-family:'Tajawal',sans-serif;}
+.forgot:hover{color:var(--teal);}
+.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.1));border:1px solid rgba(0,245,212,.22);border-radius:12px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s;margin-bottom:10px;}
+.btn-auth:hover{box-shadow:0 0 25px rgba(0,245,212,.12);transform:translateY(-1px);}
+.btn-auth:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.divider{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.div-line{flex:1;height:1px;background:rgba(26,37,64,.7);}
+.div-txt{font-size:.65rem;color:#3a4f6e;}
+.btn-google{width:100%;padding:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;color:#6b84a8;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-google:hover{background:rgba(255,255,255,.05);color:#e8f0fe;border-color:rgba(255,255,255,.12);}
+
+/* LANG BTN */
+.lang-btn{position:fixed;top:36px;right:20px;z-index:300;background:rgba(9,12,24,.9);border:1px solid rgba(26,37,64,.8);border-radius:30px;padding:5px 12px;font-size:.7rem;color:#6b84a8;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
+.lang-btn:hover{border-color:rgba(0,245,212,.2);color:var(--teal);}
+.lang-dropdown{position:fixed;top:62px;right:20px;z-index:300;background:rgba(9,12,24,.98);border:1px solid rgba(26,37,64,.8);border-radius:14px;padding:8px;display:none;flex-direction:column;gap:3px;min-width:160px;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+.lang-dropdown.open{display:flex;}
+.lang-opt{padding:8px 12px;border-radius:8px;font-size:.8rem;color:#6b84a8;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.lang-opt:hover,.lang-opt.active{background:rgba(0,245,212,.06);color:var(--teal);}
+
+/* SUPPORT */
+.support{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:.62rem;color:#3a4f6e;z-index:200;text-align:center;}
+.support a{color:#3a4f6e;text-decoration:none;transition:color .2s;}
+.support a:hover{color:var(--teal);}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:rgba(9,12,24,.99);border:1px solid rgba(0,245,212,.1);border-radius:18px;padding:26px;width:340px;animation:mUp .3s ease;}
+@keyframes mUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-title{font-size:.95rem;font-weight:700;color:var(--teal);margin-bottom:4px;}
+.modal-sub{font-size:.72rem;color:#3a4f6e;margin-bottom:16px;}
+.modal-btns{display:flex;gap:8px;margin-top:14px;}
+.mbtn{flex:1;padding:9px;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
+.mbtn.p{background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.18);color:var(--teal);}
+.mbtn.s{background:transparent;border:1px solid rgba(26,37,64,.8);color:#6b84a8;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- TICKER -->
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<!-- LANG -->
+<button class="lang-btn" onclick="toggleLang()">🌐 <span id="langLabel">العربية</span> ▾</button>
+<div class="lang-dropdown" id="langDrop">
+  <div class="lang-opt active" onclick="setLang('ar','العربية','rtl',this)">🇸🇦 العربية</div>
+  <div class="lang-opt" onclick="setLang('en','English','ltr',this)">🇺🇸 English</div>
+  <div class="lang-opt" onclick="setLang('tr','Türkçe','ltr',this)">🇹🇷 Türkçe</div>
+  <div class="lang-opt" onclick="setLang('fr','Français','ltr',this)">🇫🇷 Français</div>
+  <div class="lang-opt" onclick="setLang('es','Español','ltr',this)">🇪🇸 Español</div>
+  <div class="lang-opt" onclick="setLang('de','Deutsch','ltr',this)">🇩🇪 Deutsch</div>
+  <div class="lang-opt" onclick="setLang('ru','Русский','ltr',this)">🇷🇺 Русский</div>
+  <div class="lang-opt" onclick="setLang('fa','فارسی','rtl',this)">🇮🇷 فارسی</div>
+  <div class="lang-opt" onclick="setLang('id','Indonesia','ltr',this)">🇮🇩 Indonesia</div>
+  <div class="lang-opt" onclick="setLang('ja','日本語','ltr',this)">🇯🇵 日本語</div>
+  <div class="lang-opt" onclick="setLang('zh','中文','ltr',this)">🇨🇳 中文</div>
+  <div class="lang-opt" onclick="setLang('pt','Português','ltr',this)">🇧🇷 Português</div>
+</div>
+
+<!-- SKIP -->
+<button class="btn-skip" id="skipBtn" onclick="goToLogin()">تخطي ←</button>
+
+<!-- ONBOARDING 1 -->
+<div class="screen active slide-right" id="ob1">
+  <div class="ob-wrap">
+    <div class="ob-badge">🚀 VOQUEX TRADING PLATFORM</div>
+    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite">📊</div>
+    <div class="ob-title">
+      <span style="background:linear-gradient(135deg,#00f5d4,#2979ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">تتبع صفقاتك</span><br>
+      بذكاء حقيقي
+    </div>
+    <div class="ob-desc">سجّل كل صفقة، اكتشف أنماطك، وطوّر استراتيجيتك بمساعدة الذكاء الاصطناعي</div>
+    <div class="ob-features">
+      <div class="ob-feat"><div class="ob-feat-icon">📈</div><div class="ob-feat-title" style="color:#00f5d4">تحليل تلقائي</div><div class="ob-feat-sub">لكل صفقة بالتفصيل</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">🤖</div><div class="ob-feat-title" style="color:#aa00ff">AI Coach</div><div class="ob-feat-sub">مدربك الشخصي</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">🛡️</div><div class="ob-feat-title" style="color:#ffb800">إدارة مخاطر</div><div class="ob-feat-sub">احمِ رأس مالك</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">🌍</div><div class="ob-feat-title" style="color:#2979ff">12 لغة</div><div class="ob-feat-sub">العربية أولاً</div></div>
+    </div>
+    <div class="ob-dots">
+      <div class="dot active" onclick="goTo(1)"></div>
+      <div class="dot" onclick="goTo(2)"></div>
+      <div class="dot" onclick="goTo(3)"></div>
+    </div>
+    <button class="btn-next" onclick="goTo(2)">التالي ←</button>
+  </div>
+</div>
+
+<!-- ONBOARDING 2 -->
+<div class="screen slide-right" id="ob2">
+  <div class="ob-wrap">
+    <div class="ob-badge">💡 AI-POWERED INSIGHTS</div>
+    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite 0.5s">🤖</div>
+    <div class="ob-title">
+      <span style="background:linear-gradient(135deg,#aa00ff,#2979ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI Coach</span><br>
+      يعرف نقاط ضعفك
+    </div>
+    <div class="ob-desc">EdgeBot يحلل صفقاتك ويكتشف أنماط الخسارة والربح — ويعطيك توصيات شخصية دقيقة</div>
+    <div class="ob-features">
+      <div class="ob-feat"><div class="ob-feat-icon">🔍</div><div class="ob-feat-title" style="color:#aa00ff">كشف الأنماط</div><div class="ob-feat-sub">Revenge Trade تحذير</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">⏰</div><div class="ob-feat-title" style="color:#00f5d4">أفضل الأوقات</div><div class="ob-feat-sub">متى تتداول بدقة</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">🎯</div><div class="ob-feat-title" style="color:#ffb800">أهداف أسبوعية</div><div class="ob-feat-sub">خطة تطور حقيقية</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">📊</div><div class="ob-feat-title" style="color:#2979ff">Sharpe Ratio</div><div class="ob-feat-sub">معايير احترافية</div></div>
+    </div>
+    <div class="ob-dots">
+      <div class="dot" onclick="goTo(1)"></div>
+      <div class="dot active" onclick="goTo(2)"></div>
+      <div class="dot" onclick="goTo(3)"></div>
+    </div>
+    <button class="btn-next" onclick="goTo(3)">التالي ←</button>
+  </div>
+</div>
+
+<!-- ONBOARDING 3 -->
+<div class="screen slide-right" id="ob3">
+  <div class="ob-wrap">
+    <div class="ob-badge">💎 JOIN 50,000+ TRADERS</div>
+    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite 1s">🏆</div>
+    <div class="ob-title">
+      انضم لمجتمع<br>
+      <span style="background:linear-gradient(135deg,#ffb800,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">المتداولين الأذكياء</span>
+    </div>
+    <div class="ob-desc">50,000+ متداول يستخدمون Voquex يومياً — ابدأ مجاناً وطوّر أداءك من اليوم الأول</div>
+    <div class="ob-features">
+      <div class="ob-feat"><div class="ob-feat-icon">🆓</div><div class="ob-feat-title" style="color:#00e676">مجاني للأبد</div><div class="ob-feat-sub">20 صفقة/شهر</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">⚡</div><div class="ob-feat-title" style="color:#00f5d4">Pro $9.99</div><div class="ob-feat-sub">صفقات غير محدودة</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">👑</div><div class="ob-feat-title" style="color:#ffb800">Elite $19.99</div><div class="ob-feat-sub">AI Coach كامل</div></div>
+      <div class="ob-feat"><div class="ob-feat-icon">🏢</div><div class="ob-feat-title" style="color:#aa00ff">Team $49.99</div><div class="ob-feat-sub">10 مستخدمين</div></div>
+    </div>
+    <div class="ob-dots">
+      <div class="dot" onclick="goTo(1)"></div>
+      <div class="dot" onclick="goTo(2)"></div>
+      <div class="dot active" onclick="goTo(3)"></div>
+    </div>
+    <button class="btn-next" onclick="goToLogin()" style="background:linear-gradient(135deg,rgba(0,245,212,.2),rgba(41,121,255,.2));border-color:rgba(0,245,212,.4);">ابدأ مجاناً 🚀</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen slide-right" id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-logo">VOQUEX</div>
+    <div class="login-sub">TRADING INTELLIGENCE PLATFORM</div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" id="t1" onclick="setMode('login')">تسجيل الدخول</button>
+        <button class="tab" id="t2" onclick="setMode('signup')">حساب جديد</button>
+      </div>
+      <div id="msg" class="msg"></div>
+      <label class="lbl">البريد الإلكتروني</label>
+      <div class="inp-wrap">
+        <input class="inp" id="email" type="email" placeholder="example@email.com" dir="ltr">
+      </div>
+      <label class="lbl">كلمة المرور</label>
+      <div class="inp-wrap">
+        <input class="inp" id="pass" type="password" placeholder="••••••••" dir="ltr" style="padding-left:36px">
+        <button class="inp-icon" onclick="togglePass()">👁</button>
+      </div>
+      <div class="row-between">
+        <label class="remember"><input type="checkbox" id="remember"> تذكرني</label>
+        <button class="forgot" onclick="openForgot()">نسيت كلمة المرور؟</button>
+      </div>
+      <button class="btn-auth" id="authBtn" onclick="doAuth()">دخول ←</button>
+      <div class="divider"><div class="div-line"></div><div class="div-txt">أو</div><div class="div-line"></div></div>
+      <button class="btn-google" onclick="googleAuth()">
+        <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        متابعة مع Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT MODAL -->
+<div class="modal-ov" id="forgotModal">
+  <div class="modal">
+    <div class="modal-title">🔑 استعادة كلمة المرور</div>
+    <div class="modal-sub">سنرسل لك رابط إعادة التعيين</div>
+    <label class="lbl">البريد الإلكتروني</label>
+    <div class="inp-wrap"><input class="inp" id="forgotEmail" type="email" placeholder="example@email.com" dir="ltr"></div>
+    <div id="forgotMsg" class="msg"></div>
+    <div class="modal-btns">
+      <button class="mbtn s" onclick="closeForgot()">إلغاء</button>
+      <button class="mbtn p" onclick="sendReset()">إرسال ←</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPORT -->
+<div class="support">
+  للدعم والاستفسارات: <a href="mailto:info.mohammed1c@gmail.com">info.mohammed1c@gmail.com</a>
+</div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+// تحقق من الجلسة
+const{data:{session}}=await sb.auth.getSession()
+if(session) location.href='dashboard.html'
+
+// تحقق من Onboarding
+const seen=localStorage.getItem('voquex_seen')
+let curScreen=seen?'loginScreen':'ob1'
+if(seen){
+  document.getElementById('ob1').classList.remove('active')
+  document.getElementById('loginScreen').classList.add('active')
+  document.getElementById('skipBtn').style.display='none'
+}
+
+window.goTo=function(n){
+  const screens=['ob1','ob2','ob3']
+  screens.forEach(id=>document.getElementById(id).classList.remove('active'))
+  document.getElementById('ob'+n).classList.add('active')
+}
+
+window.goToLogin=function(){
+  localStorage.setItem('voquex_seen','1')
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+  document.getElementById('loginScreen').classList.add('active')
+  document.getElementById('skipBtn').style.display='none'
+}
+
+let mode='login'
+window.setMode=function(m){
+  mode=m
+  document.getElementById('t1').classList.toggle('active',m==='login')
+  document.getElementById('t2').classList.toggle('active',m==='signup')
+  document.getElementById('authBtn').textContent=m==='login'?'دخول ←':'إنشاء حساب ←'
+  document.getElementById('msg').className='msg'
+}
+
+window.togglePass=function(){
+  const p=document.getElementById('pass')
+  p.type=p.type==='password'?'text':'password'
+}
+
+window.openForgot=()=>document.getElementById('forgotModal').classList.add('open')
+window.closeForgot=()=>document.getElementById('forgotModal').classList.remove('open')
+
+window.sendReset=async function(){
+  const email=document.getElementById('forgotEmail').value.trim()
+  const msg=document.getElementById('forgotMsg')
+  if(!email){msg.textContent='أدخل بريدك';msg.className='msg err';return}
+  const{error}=await sb.auth.resetPasswordForEmail(email)
+  if(error){msg.textContent='خطأ: '+error.message;msg.className='msg err';}
+  else{msg.textContent='✅ تم الإرسال! تحقق من بريدك';msg.className='msg ok';}
+}
+
+window.doAuth=async function(){
+  const e=document.getElementById('email').value.trim()
+  const p=document.getElementById('pass').value
+  const btn=document.getElementById('authBtn')
+  const msg=document.getElementById('msg')
+  if(!e||!p){msg.textContent='أدخل البريد وكلمة المرور';msg.className='msg err';return}
+  btn.disabled=true;btn.textContent='⏳...'
+  try{
+    if(mode==='signup'){
+      const{error}=await sb.auth.signUp({email:e,password:p})
+      if(error)throw error
+      msg.textContent='✅ تم إنشاء الحساب!';msg.className='msg ok'
+    }else{
+      const{error}=await sb.auth.signInWithPassword({email:e,password:p})
+      if(error)throw error
+      location.href='dashboard.html'
+    }
+  }catch(err){msg.textContent='خطأ: '+err.message;msg.className='msg err';}
+  btn.disabled=false;btn.textContent=mode==='login'?'دخول ←':'إنشاء حساب ←'
+}
+
+window.googleAuth=async function(){
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/dashboard.html'}})
+  if(error)alert('خطأ: '+error.message)
+}
+
+// اللغات
+window.toggleLang=()=>document.getElementById('langDrop').classList.toggle('open')
+document.addEventListener('click',e=>{if(!e.target.closest('.lang-btn')&&!e.target.closest('.lang-dropdown'))document.getElementById('langDrop').classList.remove('open')})
+
+window.setLang=function(l,label,dir,el){
+  document.querySelectorAll('.lang-opt').forEach(e=>e.classList.remove('active'))
+  el.classList.add('active')
+  document.getElementById('langLabel').textContent=label
+  document.body.dir=dir
+  document.getElementById('langDrop').classList.remove('open')
+}
+
+// TICKER
+const tData=[
+  {p:'XAUUSD',v:'2,345.80',u:true},{p:'EURUSD',v:'1.0892',u:false},
+  {p:'GBPUSD',v:'1.2654',u:true},{p:'BTCUSD',v:'67,420',u:true},
+  {p:'US30',v:'38,920',u:false},{p:'NAS100',v:'17,840',u:true},
+  {p:'USDJPY',v:'149.82',u:false},{p:'ETHUSD',v:'3,420',u:true},
+  {p:'USOIL',v:'82.40',u:false},{p:'XAGUSD',v:'27.85',u:true},
+  {p:'SP500',v:'5,234',u:true},{p:'FTSE100',v:'7,820',u:false},
+]
+const tEl=document.getElementById('ticker')
+tEl.innerHTML=[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v}</span></div>`).join('')
+
+// تحديث الأسعار كل 3 ثواني
+setInterval(()=>{
+  document.querySelectorAll('.tick-item').forEach((el,i)=>{
+    const d=tData[i%tData.length]
+    const change=(Math.random()-.5)*.5
+    const newVal=parseFloat(d.v.replace(',',''))+change
+    d.u=change>0
+    el.querySelector('.tick-pair').textContent=d.p
+    const span=el.querySelector(change>0?'.tick-up':'.tick-down')||el.querySelector('span:last-child')
+    span.className=change>0?'tick-up':'tick-down'
+    span.textContent=(change>0?'▲':'▼')+' '+newVal.toFixed(d.v.includes(',')?0:4)
+  })
+},3000)
+
+// CANVAS
+const cv=document.getElementById('c'),ctx=cv.getContext('2d')
+cv.width=window.innerWidth;cv.height=window.innerHeight
+const pts=Array.from({length:80},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.2+.3,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,c:['#00f5d4','#2979ff','#aa00ff','#ffb800'][~~(Math.random()*4)]}))
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height)
+  ctx.fillStyle='#06080f';ctx.fillRect(0,0,cv.width,cv.height)
+  ctx.strokeStyle='rgba(0,245,212,.01)';ctx.lineWidth=.5
+  for(let i=0;i<cv.width;i+=60){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,cv.height);ctx.stroke()}
+  for(let i=0;i<cv.height;i+=60){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(cv.width,i);ctx.stroke()}
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy
+    if(p.x<0)p.x=cv.width;if(p.x>cv.width)p.x=0
+    if(p.y<0)p.y=cv.height;if(p.y>cv.height)p.y=0
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.c;ctx.fill()
+    pts.forEach(p2=>{
+      const d=Math.hypot(p.x-p2.x,p.y-p2.y)
+      if(d<70){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=`rgba(0,245,212,${.04*(1-d/70)})`;ctx.lineWidth=.3;ctx.stroke()}
+    })
+  })
+  requestAnimationFrame(draw)
+}
+draw()
+window.onresize=()=>{cv.width=window.innerWidth;cv.height=window.innerHeight}
+</script>
+</body>
+</html>

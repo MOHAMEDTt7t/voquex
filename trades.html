@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — سجل الصفقات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;transition:all .2s;}
+.btn-logout:hover{background:rgba(255,23,68,.08);}
+
+/* MAIN */
+.main{margin-right:220px;flex:1;padding:24px;padding-bottom:50px;}
+
+/* HEADER */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.page-title{font-size:1.3rem;font-weight:800;}
+.page-sub{font-size:.7rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.add-btn{padding:11px 22px;background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(41,121,255,.1));border:1px solid rgba(0,245,212,.25);border-radius:12px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:8px;position:relative;overflow:hidden;}
+.add-btn::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,245,212,.15),transparent);opacity:0;transition:opacity .3s;}
+.add-btn:hover::before{opacity:1;}
+.add-btn:hover{box-shadow:0 0 30px rgba(0,245,212,.2);transform:translateY(-2px);}
+
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;transition:all .3s;cursor:pointer;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--green),transparent);}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.kpi-bg{position:absolute;width:80px;height:80px;border-radius:50%;filter:blur(25px);opacity:.06;top:-10px;left:-10px;}
+.kpi-label{font-size:.6rem;color:#3a4f6e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1;margin-bottom:3px;}
+.kpi-sub{font-size:.62rem;color:#3a4f6e;}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:7px 14px;border-radius:20px;font-size:.75rem;background:rgba(9,12,24,.8);border:1px solid var(--border);color:#3a4f6e;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;display:flex;align-items:center;gap:5px;}
+.filter-btn:hover,.filter-btn.on{background:rgba(0,245,212,.06);border-color:rgba(0,245,212,.2);color:var(--teal);}
+.search-box{margin-right:auto;position:relative;}
+.search-inp{padding:7px 14px 7px 32px;background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:20px;color:#e8f0fe;font-family:'Tajawal',sans-serif;font-size:.75rem;outline:none;width:180px;transition:all .25s;}
+.search-inp:focus{border-color:rgba(0,245,212,.2);width:220px;}
+.search-inp::placeholder{color:#3a4f6e;}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#3a4f6e;font-size:.75rem;}
+.sort-btn{padding:7px 12px;border-radius:20px;font-size:.72rem;background:rgba(9,12,24,.8);border:1px solid var(--border);color:#3a4f6e;cursor:pointer;font-family:'Tajawal',sans-serif;transition:all .2s;}
+.sort-btn:hover{color:var(--teal);border-color:rgba(0,245,212,.2);}
+
+/* TABLE */
+.table-wrap{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.table-info{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:#3a4f6e;}
+table{width:100%;border-collapse:collapse;}
+thead{background:rgba(15,21,37,.8);}
+th{padding:11px 14px;text-align:right;font-size:.6rem;color:#3a4f6e;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;transition:color .2s;}
+th:hover{color:var(--teal);}
+tbody tr{border-bottom:1px solid rgba(26,37,64,.15);transition:all .2s;cursor:pointer;}
+tbody tr:hover{background:rgba(0,245,212,.015);}
+tbody tr.win-row:hover{background:rgba(0,230,118,.02);}
+tbody tr.loss-row:hover{background:rgba(255,23,68,.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:12px 14px;font-size:.82rem;vertical-align:middle;}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:.75rem;}
+.badge{padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;gap:3px;}
+.b-buy{background:rgba(0,230,118,.08);color:var(--green);border:1px solid rgba(0,230,118,.12);}
+.b-sell{background:rgba(255,23,68,.08);color:#ff6b6b;border:1px solid rgba(255,23,68,.12);}
+.b-win{background:rgba(0,230,118,.08);color:var(--green);border:1px solid rgba(0,230,118,.12);}
+.b-loss{background:rgba(255,23,68,.08);color:#ff6b6b;border:1px solid rgba(255,23,68,.12);}
+.pnl-p{color:var(--green);font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.pnl-n{color:#ff6b6b;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.empty-state{text-align:center;padding:60px;color:#3a4f6e;}
+.empty-icon{font-size:3rem;margin-bottom:12px;}
+.row-num{color:#3a4f6e;font-family:'IBM Plex Mono',monospace;font-size:.7rem;}
+.del-btn{padding:4px 8px;background:rgba(255,23,68,.06);border:1px solid rgba(255,23,68,.1);border-radius:6px;color:#ff6b6b;font-size:.65rem;cursor:pointer;transition:all .2s;opacity:0;}
+tr:hover .del-btn{opacity:1;}
+.del-btn:hover{background:rgba(255,23,68,.12);}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(20px);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:linear-gradient(135deg,rgba(12,17,32,.99),rgba(6,8,15,.99));border:1px solid rgba(0,245,212,.1);border-radius:22px;padding:32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:mUp .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes mUp{from{transform:translateY(40px) scale(.95);opacity:0;}to{transform:translateY(0) scale(1);opacity:1;}}
+.modal-header{margin-bottom:24px;}
+.modal-title{font-size:1.1rem;font-weight:800;color:var(--teal);margin-bottom:3px;}
+.modal-sub{font-size:.72rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.flbl{font-size:.68rem;color:#6b84a8;letter-spacing:.5px;}
+.finp,.fsel{padding:10px 12px;background:rgba(6,8,15,.8);border:1px solid rgba(26,37,64,.8);border-radius:9px;color:#e8f0fe;font-family:'Tajawal',sans-serif;font-size:.85rem;outline:none;transition:all .25s;width:100%;}
+.finp:focus,.fsel:focus{border-color:rgba(0,245,212,.3);box-shadow:0 0 0 3px rgba(0,245,212,.04);}
+.finp::placeholder{color:#3a4f6e;}
+.fsel option{background:#0f1525;}
+.pnl-prev{padding:14px;background:rgba(0,245,212,.03);border:1px solid rgba(0,245,212,.08);border-radius:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--teal);transition:all .3s;}
+.rr-calc{padding:10px;background:rgba(41,121,255,.04);border:1px solid rgba(41,121,255,.08);border-radius:9px;font-size:.72rem;color:#6b84a8;font-family:'IBM Plex Mono',monospace;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;}
+.rr-item-val{font-size:.9rem;font-weight:700;color:#82b1ff;}
+.rr-item-lbl{font-size:.55rem;color:#3a4f6e;margin-top:2px;}
+.modal-footer{display:flex;gap:10px;margin-top:20px;}
+.mbtn{flex:1;padding:12px;border-radius:11px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s;}
+.mbtn.save{background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(41,121,255,.1));border:1px solid rgba(0,245,212,.22);color:var(--teal);}
+.mbtn.save:hover{box-shadow:0 0 25px rgba(0,245,212,.15);}
+.mbtn.save:disabled{opacity:.35;cursor:not-allowed;}
+.mbtn.cancel{background:transparent;border:1px solid var(--border);color:#6b84a8;}
+.mbtn.cancel:hover{border-color:#6b84a8;}
+
+/* DETAIL MODAL */
+.detail-modal{width:480px;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.detail-item{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.detail-lbl{font-size:.6rem;color:#3a4f6e;margin-bottom:4px;letter-spacing:.5px;}
+.detail-val{font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:700;}
+
+/* TOAST */
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(9,12,24,.97);border:1px solid rgba(0,245,212,.15);border-radius:12px;padding:11px 22px;font-size:.82rem;color:var(--teal);z-index:9999;opacity:0;transition:all .35s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{color:#ff6b6b;border-color:rgba(255,23,68,.2);}
+
+/* CONFETTI */
+.confetti-c{position:fixed;inset:0;pointer-events:none;z-index:99999;display:none;}
+.cp{position:absolute;animation:cfAll linear forwards;}
+@keyframes cfAll{0%{transform:translateY(-10px) rotate(0deg) scale(1);opacity:1;}100%{transform:translateY(110vh) rotate(720deg) scale(.5);opacity:0;}}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;height:120px;gap:10px;color:#3a4f6e;}
+.spinner{width:24px;height:24px;border:2px solid rgba(0,245,212,.1);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* FADE IN ROWS */
+@keyframes rowIn{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:translateX(0);}}
+.row-anim{animation:rowIn .3s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item active">📋 سجل الصفقات <span class="nav-badge" id="navBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">سجل الصفقات 📋</div>
+      <div class="page-sub" id="userSub">جارٍ التحميل...</div>
+    </div>
+    <button class="add-btn" id="addBtn">⚡ إضافة صفقة</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-bg" style="background:var(--teal)"></div>
+      <div class="kpi-label">إجمالي P&L</div>
+      <div class="kpi-val" id="k0" style="color:var(--teal)">$0</div>
+      <div class="kpi-sub" id="k0s">كل الوقت</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bg" style="background:var(--green)"></div>
+      <div class="kpi-label">Win Rate</div>
+      <div class="kpi-val" id="k1" style="color:var(--green)">0%</div>
+      <div class="kpi-sub" id="k1s">نسبة الفوز</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bg" style="background:var(--gold)"></div>
+      <div class="kpi-label">إجمالي الصفقات</div>
+      <div class="kpi-val" id="k2" style="color:var(--gold)">0</div>
+      <div class="kpi-sub" id="k2s">صفقة مسجلة</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bg" style="background:var(--blue)"></div>
+      <div class="kpi-label">Profit Factor</div>
+      <div class="kpi-val" id="k3" style="color:#82b1ff">0.00</div>
+      <div class="kpi-sub">ربح ÷ خسارة</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="filter-btn on" onclick="setFilter('all',this)">الكل</button>
+    <button class="filter-btn" onclick="setFilter('win',this)">✅ رابح</button>
+    <button class="filter-btn" onclick="setFilter('loss',this)">❌ خاسر</button>
+    <button class="filter-btn" onclick="setFilter('buy',this)">📈 شراء</button>
+    <button class="filter-btn" onclick="setFilter('sell',this)">📉 بيع</button>
+    <button class="sort-btn" onclick="toggleSort()">⇅ ترتيب</button>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" id="searchInp" placeholder="ابحث عن زوج...">
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-info">
+      <span id="tableInfo">جارٍ التحميل...</span>
+      <span id="tablePnl" style="font-family:'IBM Plex Mono',monospace"></span>
+    </div>
+    <div id="tableBody">
+      <div class="loading"><div class="spinner"></div> جارٍ التحميل...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-ov" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚡ إضافة صفقة جديدة</div>
+      <div class="modal-sub">سجّل صفقتك وتابع أداءك</div>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="flbl">الزوج</label>
+        <select class="fsel" id="f-pair">
+          <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option>
+          <option>USDJPY</option><option>US30</option><option>NAS100</option>
+          <option>BTCUSD</option><option>ETHUSD</option><option>USOIL</option>
+          <option>USDCAD</option><option>AUDUSD</option><option>NZDUSD</option>
+          <option>SP500</option><option>XAGUSD</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">الاتجاه</label>
+        <select class="fsel" id="f-dir" onchange="calcRR()">
+          <option value="buy">📈 شراء</option>
+          <option value="sell">📉 بيع</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">سعر الدخول</label>
+        <input class="finp" id="f-entry" type="number" step="any" placeholder="2345.50" dir="ltr" oninput="calcRR()">
+      </div>
+      <div class="fg">
+        <label class="flbl">سعر الخروج</label>
+        <input class="finp" id="f-exit" type="number" step="any" placeholder="2360.00" dir="ltr" oninput="calcRR()">
+      </div>
+      <div class="fg">
+        <label class="flbl">Stop Loss</label>
+        <input class="finp" id="f-sl" type="number" step="any" placeholder="2330.00" dir="ltr" oninput="calcRR()">
+      </div>
+      <div class="fg">
+        <label class="flbl">Take Profit</label>
+        <input class="finp" id="f-tp" type="number" step="any" placeholder="2380.00" dir="ltr" oninput="calcRR()">
+      </div>
+      <div class="fg">
+        <label class="flbl">Lots / Volume</label>
+        <input class="finp" id="f-lots" type="number" step="any" placeholder="0.10" dir="ltr">
+      </div>
+      <div class="fg">
+        <label class="flbl">P&L بالدولار</label>
+        <input class="finp" id="f-pnl" type="number" step="any" placeholder="150" dir="ltr" oninput="updatePnlPrev()">
+      </div>
+      <div class="fg full">
+        <div class="pnl-prev" id="pnlPrev">P&L: $0.00</div>
+      </div>
+      <div class="fg full" id="rrCalcWrap" style="display:none">
+        <div class="rr-calc">
+          <div><div class="rr-item-val" id="rr-risk">-</div><div class="rr-item-lbl">RISK</div></div>
+          <div><div class="rr-item-val" id="rr-reward">-</div><div class="rr-item-lbl">REWARD</div></div>
+          <div><div class="rr-item-val" id="rr-ratio">-</div><div class="rr-item-lbl">R:R RATIO</div></div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="flbl">التاريخ والوقت</label>
+        <input class="finp" id="f-date" type="datetime-local" dir="ltr">
+      </div>
+      <div class="fg">
+        <label class="flbl">الجلسة</label>
+        <select class="fsel" id="f-session">
+          <option value="">— اختر الجلسة —</option>
+          <option value="london">🇬🇧 London</option>
+          <option value="newyork">🇺🇸 New York</option>
+          <option value="tokyo">🇯🇵 Tokyo</option>
+          <option value="sydney">🇦🇺 Sydney</option>
+        </select>
+      </div>
+      <div class="fg full">
+        <label class="flbl">الاستراتيجية / سبب الدخول</label>
+        <input class="finp" id="f-notes" type="text" placeholder="Break & Retest، Supply & Demand، ICT...">
+      </div>
+      <div class="fg full">
+        <label class="flbl">الحالة النفسية</label>
+        <select class="fsel" id="f-mood">
+          <option value="">— كيف كنت تشعر؟ —</option>
+          <option value="confident">😎 واثق</option>
+          <option value="anxious">😰 قلق</option>
+          <option value="neutral">😐 محايد</option>
+          <option value="fomo">😱 FOMO</option>
+          <option value="revenge">😤 Revenge Trade</option>
+          <option value="disciplined">🎯 منضبط</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn cancel" onclick="closeModal()">إلغاء</button>
+      <button class="mbtn save" id="saveBtn" onclick="saveTrade()">💾 حفظ الصفقة</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-ov" id="detailModal">
+  <div class="modal detail-modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle">تفاصيل الصفقة</div>
+      <div class="modal-sub" id="detailSub"></div>
+    </div>
+    <div class="detail-grid" id="detailGrid"></div>
+    <div class="modal-footer">
+      <button class="mbtn cancel" onclick="closeDetail()">إغلاق</button>
+      <button class="mbtn save" style="background:rgba(255,23,68,.08);border-color:rgba(255,23,68,.2);color:#ff6b6b;" onclick="deleteCurrent()">🗑️ حذف</button>
+    </div>
+  </div>
+</div>
+
+<div class="confetti-c" id="confetti"></div>
+<div class="toast" id="toast"></div>
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null,all=[],filtered=[],sortAsc=false,currentFilter='all',currentDetail=null
+
+// جلسة
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;document.getElementById('userSub').textContent=user.email+' • Free Plan';}
+
+window.doLogout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+
+// تحميل
+async function load(){
+  const{data,error}=await sb.from('trades').select('*').eq('user_id',user.id).order('created_at',{ascending:false})
+  if(error){showToast('خطأ في التحميل','error');return;}
+  all=data||[]
+  document.getElementById('navBadge').textContent=all.length
+  applyFilter()
+  calcKPIs()
+}
+
+// KPIs
+function calcKPIs(){
+  const t=all
+  if(!t.length)return
+  const pnl=t.reduce((s,x)=>s+(x.pnl||0),0)
+  const wins=t.filter(x=>x.result==='win')
+  const losses=t.filter(x=>x.result==='loss')
+  const wr=t.length?((wins.length/t.length)*100):0
+  const gp=wins.reduce((s,x)=>s+(x.pnl||0),0)
+  const gl=Math.abs(losses.reduce((s,x)=>s+(x.pnl||0),0))
+  const pf=gl>0?(gp/gl):gp>0?999:0
+
+  const k0=document.getElementById('k0')
+  k0.textContent=(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(0)
+  k0.style.color=pnl>=0?'var(--teal)':'#ff6b6b'
+  document.getElementById('k0s').textContent=pnl>=0?'📈 إجمالي الأرباح':'📉 إجمالي الخسائر'
+  document.getElementById('k1').textContent=wr.toFixed(1)+'%'
+  document.getElementById('k1s').textContent=wins.length+' ربح / '+losses.length+' خسارة'
+  document.getElementById('k2').textContent=t.length
+  document.getElementById('k3').textContent=pf>99?'∞':pf.toFixed(2)
+}
+
+// فلترة
+function applyFilter(){
+  let f=all
+  const q=document.getElementById('searchInp').value.toLowerCase()
+  if(currentFilter==='win') f=all.filter(t=>t.result==='win')
+  else if(currentFilter==='loss') f=all.filter(t=>t.result==='loss')
+  else if(currentFilter==='buy') f=all.filter(t=>t.direction==='buy')
+  else if(currentFilter==='sell') f=all.filter(t=>t.direction==='sell')
+  if(q) f=f.filter(t=>t.pair.toLowerCase().includes(q))
+  if(!sortAsc) f=[...f]
+  else f=[...f].reverse()
+  filtered=f
+  renderTable()
+}
+
+window.setFilter=function(type,btn){
+  currentFilter=type
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  applyFilter()
+}
+
+window.toggleSort=function(){sortAsc=!sortAsc;applyFilter();}
+
+document.getElementById('searchInp').addEventListener('input',applyFilter)
+
+// عرض الجدول
+function renderTable(){
+  const wrap=document.getElementById('tableBody')
+  const totalPnl=filtered.reduce((s,t)=>s+(t.pnl||0),0)
+  document.getElementById('tableInfo').textContent=`${filtered.length} صفقة`
+  document.getElementById('tablePnl').textContent=(totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0)
+  document.getElementById('tablePnl').style.color=totalPnl>=0?'var(--green)':'#ff6b6b'
+
+  if(!filtered.length){
+    wrap.innerHTML=`<div class="empty-state"><div class="empty-icon">${all.length?'🔍':'📊'}</div><div>${all.length?'لا توجد نتائج مطابقة':'لا توجد صفقات بعد'}</div><div style="font-size:.72rem;margin-top:6px;color:#3a4f6e">${all.length?'جرب فلتراً آخر':'اضغط ⚡ إضافة صفقة لتسجيل أول صفقة'}</div></div>`
+    return
+  }
+
+  wrap.innerHTML=`<table>
+    <thead><tr>
+      <th>#</th><th>الزوج</th><th>الاتجاه</th>
+      <th>الدخول</th><th>الخروج</th><th>SL</th><th>TP</th>
+      <th>Lots</th><th>P&L</th><th>النتيجة</th>
+      <th>الجلسة</th><th>التاريخ</th><th></th>
+    </tr></thead>
+    <tbody>
+      ${filtered.map((t,i)=>`
+        <tr class="${t.result==='win'?'win-row':'loss-row'} row-anim" style="animation-delay:${i*.03}s" onclick="showDetail('${t.id}')">
+          <td class="row-num">${i+1}</td>
+          <td style="font-weight:700;color:#e8f0fe">${t.pair}</td>
+          <td><span class="badge ${t.direction==='buy'?'b-buy':'b-sell'}">${t.direction==='buy'?'▲ شراء':'▼ بيع'}</span></td>
+          <td class="mono">${t.entry||'—'}</td>
+          <td class="mono">${t.exit_price||'—'}</td>
+          <td class="mono" style="color:#ff6b6b">${t.sl||'—'}</td>
+          <td class="mono" style="color:var(--green)">${t.tp||'—'}</td>
+          <td class="mono">${t.lots||'—'}</td>
+          <td class="${t.pnl>=0?'pnl-p':'pnl-n'}">${t.pnl>=0?'+':''}$${Math.abs(t.pnl||0).toFixed(0)}</td>
+          <td><span class="badge ${t.result==='win'?'b-win':'b-loss'}">${t.result==='win'?'✅ ربح':'❌ خسارة'}</span></td>
+          <td style="font-size:.7rem;color:#6b84a8">${t.session||'—'}</td>
+          <td class="mono" style="color:#3a4f6e;font-size:.68rem">${new Date(t.created_at).toLocaleDateString('ar')}</td>
+          <td onclick="event.stopPropagation()"><button class="del-btn" onclick="deleteTrade('${t.id}')">✕</button></td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`
+}
+
+// تفاصيل
+window.showDetail=function(id){
+  const t=all.find(x=>x.id===id)
+  if(!t)return
+  currentDetail=t
+  document.getElementById('detailTitle').textContent=t.pair+' — '+(t.direction==='buy'?'📈 شراء':'📉 بيع')
+  document.getElementById('detailSub').textContent=new Date(t.created_at).toLocaleString('ar')
+  const items=[
+    ['النتيجة',t.result==='win'?'✅ ربح':'❌ خسارة',t.result==='win'?'var(--green)':'#ff6b6b'],
+    ['P&L',(t.pnl>=0?'+':'')+'$'+t.pnl,t.pnl>=0?'var(--green)':'#ff6b6b'],
+    ['الدخول',t.entry||'—','#e8f0fe'],
+    ['الخروج',t.exit_price||'—','#e8f0fe'],
+    ['Stop Loss',t.sl||'—','#ff6b6b'],
+    ['Take Profit',t.tp||'—','var(--green)'],
+    ['Lots',t.lots||'—','#82b1ff'],
+    ['الجلسة',t.session||'—','var(--gold)'],
+    ['الاستراتيجية',t.notes||'—','#e8f0fe'],
+    ['الحالة النفسية',t.mood||'—','var(--purple)'],
+  ]
+  document.getElementById('detailGrid').innerHTML=items.map(([l,v,c])=>`<div class="detail-item"><div class="detail-lbl">${l}</div><div class="detail-val" style="color:${c}">${v}</div></div>`).join('')
+  document.getElementById('detailModal').classList.add('open')
+}
+window.closeDetail=()=>{document.getElementById('detailModal').classList.remove('open');currentDetail=null;}
+
+// حذف من التفاصيل
+window.deleteCurrent=async function(){
+  if(!currentDetail)return
+  await deleteTrade(currentDetail.id)
+  closeDetail()
+}
+
+// حذف
+window.deleteTrade=async function(id){
+  const{error}=await sb.from('trades').delete().eq('id',id)
+  if(error){showToast('خطأ في الحذف','error');return;}
+  showToast('🗑️ تم حذف الصفقة')
+  load()
+}
+
+// Modal
+document.getElementById('addBtn').addEventListener('click',()=>{
+  document.getElementById('addModal').classList.add('open')
+  const now=new Date()
+  now.setMinutes(now.getMinutes()-now.getTimezoneOffset())
+  document.getElementById('f-date').value=now.toISOString().slice(0,16)
+})
+window.closeModal=()=>document.getElementById('addModal').classList.remove('open')
+document.getElementById('addModal').addEventListener('click',function(e){if(e.target===this)closeModal()})
+
+// حساب RR
+window.calcRR=function(){
+  const entry=parseFloat(document.getElementById('f-entry').value)
+  const sl=parseFloat(document.getElementById('f-sl').value)
+  const tp=parseFloat(document.getElementById('f-tp').value)
+  const wrap=document.getElementById('rrCalcWrap')
+  if(entry&&sl&&tp){
+    wrap.style.display='block'
+    const risk=Math.abs(entry-sl)
+    const reward=Math.abs(tp-entry)
+    const rr=risk>0?(reward/risk):0
+    document.getElementById('rr-risk').textContent=risk.toFixed(5)
+    document.getElementById('rr-reward').textContent=reward.toFixed(5)
+    document.getElementById('rr-ratio').textContent='1:'+rr.toFixed(2)
+  }else{wrap.style.display='none';}
+}
+
+// معاينة P&L
+window.updatePnlPrev=function(){
+  const v=parseFloat(document.getElementById('f-pnl').value)||0
+  const el=document.getElementById('pnlPrev')
+  el.textContent='P&L: '+(v>=0?'+':'')+'$'+Math.abs(v).toFixed(2)
+  el.style.color=v>=0?'var(--green)':'#ff6b6b'
+  el.style.background=v>=0?'rgba(0,230,118,.04)':'rgba(255,23,68,.04)'
+  el.style.borderColor=v>=0?'rgba(0,230,118,.1)':'rgba(255,23,68,.1)'
+}
+
+// حفظ
+window.saveTrade=async function(){
+  const pnl=parseFloat(document.getElementById('f-pnl').value)||0
+  const btn=document.getElementById('saveBtn')
+  btn.disabled=true;btn.textContent='⏳ جارٍ الحفظ...'
+  const dateVal=document.getElementById('f-date').value
+  const{error}=await sb.from('trades').insert({
+    user_id:user.id,
+    pair:document.getElementById('f-pair').value,
+    direction:document.getElementById('f-dir').value,
+    entry:parseFloat(document.getElementById('f-entry').value)||null,
+    exit_price:parseFloat(document.getElementById('f-exit').value)||null,
+    sl:parseFloat(document.getElementById('f-sl').value)||null,
+    tp:parseFloat(document.getElementById('f-tp').value)||null,
+    lots:parseFloat(document.getElementById('f-lots').value)||null,
+    pnl:pnl,
+    result:pnl>=0?'win':'loss',
+    notes:document.getElementById('f-notes').value||null,
+    session:document.getElementById('f-session').value||null,
+    mood:document.getElementById('f-mood').value||null,
+    created_at:dateVal?new Date(dateVal).toISOString():new Date().toISOString()
+  })
+  btn.disabled=false;btn.textContent='💾 حفظ الصفقة'
+  if(error){showToast('خطأ: '+error.message,'error');return;}
+  closeModal()
+  showToast(pnl>=0?'🎉 صفقة رابحة! أحسنت!':'📝 تم تسجيل الصفقة')
+  if(pnl>=0)confetti()
+  // تنظيف
+  ;['f-entry','f-exit','f-sl','f-tp','f-lots','f-pnl','f-notes'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('f-session').value=''
+  document.getElementById('f-mood').value=''
+  document.getElementById('pnlPrev').textContent='P&L: $0.00'
+  document.getElementById('pnlPrev').style.color='var(--teal)'
+  document.getElementById('rrCalcWrap').style.display='none'
+  load()
+}
+
+// Toast
+function showToast(msg,type=''){
+  const t=document.getElementById('toast')
+  t.textContent=msg;t.className='toast'+(type?' '+type:'')
+  t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),3000)
+}
+
+// Confetti
+function confetti(){
+  const el=document.getElementById('confetti')
+  el.style.display='block';el.innerHTML=''
+  const colors=['#00f5d4','#ffb800','#00e676','#2979ff','#aa00ff']
+  for(let i=0;i<100;i++){
+    const c=document.createElement('div')
+    c.className='cp'
+    const s=Math.random()*8+4
+    c.style.cssText=`left:${Math.random()*100}%;top:-10px;width:${s}px;height:${s}px;background:${colors[~~(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${Math.random()*1.5+1.2}s;animation-delay:${Math.random()*.6}s;`
+    el.appendChild(c)
+  }
+  setTimeout(()=>el.style.display='none',3000)
+}
+
+// Ticker
+const tData=[{p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},{p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},{p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true},{p:'USDJPY',v:149.82,u:false},{p:'ETHUSD',v:3420,u:true},{p:'USOIL',v:82.4,u:false}]
+const tEl=document.getElementById('ticker')
+function buildT(){return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')}
+tEl.innerHTML=buildT()
+setInterval(()=>{tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0;});tEl.innerHTML=buildT();},3000)
+
+load()
+</script>
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — لوحة التحكم</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--panel:rgba(9,12,24,.95);--border:rgba(26,37,64,.6);}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;color:#e8f0fe;min-height:100vh;display:flex;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,245,212,.2);border-radius:2px;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:rgba(6,8,15,.98);border-left:1px solid rgba(0,245,212,.06);display:flex;flex-direction:column;padding:20px 12px;position:fixed;right:0;top:0;bottom:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-align:center;margin-bottom:8px;}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:#3a4f6e;letter-spacing:2px;text-align:center;margin-bottom:24px;}
+.nav-section{font-size:.55rem;color:#3a4f6e;letter-spacing:2px;margin:12px 8px 6px;text-transform:uppercase;}
+.nav-item{padding:9px 12px;border-radius:10px;font-size:.82rem;color:#3a4f6e;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:rgba(0,245,212,.04);color:#6b84a8;}
+.nav-item.active{background:rgba(0,245,212,.08);color:var(--teal);border:1px solid rgba(0,245,212,.12);}
+.nav-item .badge{margin-right:auto;font-size:.55rem;background:rgba(0,245,212,.1);color:var(--teal);border-radius:10px;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+.user-card{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.user-email{font-size:.68rem;color:#6b84a8;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:.6rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.btn-logout{width:100%;padding:8px;background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.75rem;cursor:pointer;transition:all .2s;}
+.btn-logout:hover{background:rgba(255,23,68,.08);}
+
+/* MAIN */
+.main{margin-right:220px;flex:1;padding:24px;overflow-y:auto;}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.header-left h1{font-size:1.3rem;font-weight:800;margin-bottom:2px;}
+.header-left p{font-size:.72rem;color:#3a4f6e;font-family:'IBM Plex Mono',monospace;}
+.header-right{display:flex;gap:10px;align-items:center;}
+.hdr-stat{background:rgba(15,21,37,.6);border:1px solid var(--border);border-radius:10px;padding:8px 14px;text-align:center;}
+.hdr-stat-val{font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:700;}
+.hdr-stat-lbl{font-size:.58rem;color:#3a4f6e;margin-top:1px;}
+.refresh-btn{padding:8px 14px;background:rgba(0,245,212,.06);border:1px solid rgba(0,245,212,.12);border-radius:10px;color:var(--teal);font-size:.75rem;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;}
+.refresh-btn:hover{background:rgba(0,245,212,.1);}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+.kpi{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:all .3s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;transition:all .3s;}
+.kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--green),transparent);}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.kpi:nth-child(5)::before{background:linear-gradient(90deg,var(--red),transparent);}
+.kpi:nth-child(6)::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.kpi:hover{transform:translateY(-4px);border-color:rgba(0,245,212,.15);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.kpi-glow{position:absolute;width:60px;height:60px;border-radius:50%;filter:blur(20px);opacity:.08;top:-10px;left:-10px;transition:opacity .3s;}
+.kpi:hover .kpi-glow{opacity:.15;}
+.kpi-label{font-size:.6rem;color:#3a4f6e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:.6rem;color:#3a4f6e;display:flex;align-items:center;gap:4px;}
+.kpi-arrow{font-size:.65rem;}
+.kpi-sparkline{position:absolute;bottom:0;left:0;right:0;height:30px;opacity:.15;}
+
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px;}
+.chart-card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;padding:20px;}
+.chart-title{font-size:.85rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.chart-sub{font-size:.65rem;color:#3a4f6e;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+.chart-wrap{position:relative;}
+
+/* BOTTOM ROW */
+.bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+
+/* AI PANEL */
+.ai-panel{background:linear-gradient(135deg,rgba(170,0,255,.04),rgba(41,121,255,.04));border:1px solid rgba(170,0,255,.12);border-radius:16px;padding:20px;margin-bottom:20px;}
+.ai-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.ai-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1rem;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(170,0,255,.3);}50%{box-shadow:0 0 0 8px rgba(170,0,255,.0);}}
+.ai-name{font-size:.85rem;font-weight:700;color:#e8f0fe;}
+.ai-status{font-size:.6rem;color:var(--purple);font-family:'IBM Plex Mono',monospace;}
+.ai-insights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ai-insight{background:rgba(6,8,15,.4);border:1px solid rgba(170,0,255,.08);border-radius:10px;padding:12px;}
+.ai-insight-icon{font-size:1.1rem;margin-bottom:6px;}
+.ai-insight-title{font-size:.72rem;font-weight:700;margin-bottom:3px;}
+.ai-insight-desc{font-size:.65rem;color:#6b84a8;line-height:1.5;}
+
+/* TRADES TABLE */
+.trades-card{background:rgba(9,12,24,.8);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.trades-header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 14px;text-align:right;font-size:.6rem;color:#3a4f6e;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(15,21,37,.6);}
+td{padding:11px 14px;font-size:.8rem;border-bottom:1px solid rgba(26,37,64,.2);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,245,212,.01);}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:.75rem;}
+.badge{padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:700;}
+.b-buy{background:rgba(0,230,118,.08);color:var(--green);border:1px solid rgba(0,230,118,.12);}
+.b-sell{background:rgba(255,23,68,.08);color:#ff6b6b;border:1px solid rgba(255,23,68,.12);}
+.b-win{background:rgba(0,230,118,.08);color:var(--green);border:1px solid rgba(0,230,118,.12);}
+.b-loss{background:rgba(255,23,68,.08);color:#ff6b6b;border:1px solid rgba(255,23,68,.12);}
+.pnl-p{color:var(--green);font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.pnl-n{color:#ff6b6b;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:220px;height:26px;background:rgba(6,8,15,.98);border-top:1px solid rgba(0,245,212,.05);display:flex;align-items:center;overflow:hidden;z-index:100;}
+.ticker-track{display:flex;gap:24px;animation:tickAnim 40s linear infinite;white-space:nowrap;padding:0 16px;}
+@keyframes tickAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.58rem;display:flex;gap:5px;}
+.tick-up{color:var(--green);}
+.tick-down{color:#ff6b6b;}
+.tick-pair{color:#3a4f6e;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px;color:#3a4f6e;}
+.spinner{width:32px;height:32px;border:2px solid rgba(0,245,212,.1);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px;color:#3a4f6e;}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;}
+.empty-btn{margin-top:12px;padding:9px 20px;background:rgba(0,245,212,.06);border:1px solid rgba(0,245,212,.15);border-radius:10px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
+.empty-btn:hover{background:rgba(0,245,212,.1);}
+
+/* COUNTER ANIM */
+@keyframes countUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.count-anim{animation:countUp .6s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">VOQUEX</div>
+  <div class="logo-sub">TRADING INTELLIGENCE</div>
+  <div class="nav-section">الرئيسية</div>
+  <a href="dashboard.html" class="nav-item active">📊 لوحة التحكم</a>
+  <a href="trades.html" class="nav-item">📋 سجل الصفقات <span class="badge" id="tradesBadge">0</span></a>
+  <div class="nav-section">التحليل</div>
+  <a href="analytics.html" class="nav-item">📈 الأداء</a>
+  <a href="ai.html" class="nav-item">🤖 AI Coach</a>
+  <div class="nav-section">الأدوات</div>
+  <a href="risk.html" class="nav-item">🛡️ إدارة المخاطر</a>
+  <a href="calculator.html" class="nav-item">💹 الحاسبة</a>
+  <a href="journal.html" class="nav-item">📝 اليومية</a>
+  <div class="nav-section">المجتمع</div>
+  <a href="leaderboard.html" class="nav-item">🏆 المتصدرون</a>
+  <a href="subscription.html" class="nav-item">👑 الاشتراك</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-email" id="userEmail">جارٍ التحميل...</div>
+      <div class="user-plan">🆓 Free Plan</div>
+    </div>
+          <button class="btn-logout" onclick="logout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>لوحة التحكم 📊</h1>
+      <p id="dateStr">جارٍ التحميل...</p>
+    </div>
+    <div class="header-right">
+      <div class="hdr-stat">
+        <div class="hdr-stat-val" style="color:var(--green)" id="hdrWin">-</div>
+        <div class="hdr-stat-lbl">Win Rate</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-val" style="color:var(--teal)" id="hdrPnl">-</div>
+        <div class="hdr-stat-lbl">Total P&L</div>
+      </div>
+      <button class="refresh-btn" onclick="loadData()">🔄 تحديث</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi" id="kpi0">
+      <div class="kpi-glow" style="background:var(--teal)"></div>
+      <div class="kpi-label">إجمالي الربح</div>
+      <div class="kpi-val" id="k0" style="color:var(--teal)">$0</div>
+      <div class="kpi-sub"><span class="kpi-arrow" id="k0a">—</span><span id="k0s">هذا الشهر</span></div>
+    </div>
+    <div class="kpi" id="kpi1">
+      <div class="kpi-glow" style="background:var(--green)"></div>
+      <div class="kpi-label">Win Rate</div>
+      <div class="kpi-val" id="k1" style="color:var(--green)">0%</div>
+      <div class="kpi-sub"><span id="k1s">من إجمالي الصفقات</span></div>
+    </div>
+    <div class="kpi" id="kpi2">
+      <div class="kpi-glow" style="background:var(--blue)"></div>
+      <div class="kpi-label">Profit Factor</div>
+      <div class="kpi-val" id="k2" style="color:var(--blue)">0.00</div>
+      <div class="kpi-sub"><span id="k2s">إجمالي ربح ÷ إجمالي خسارة</span></div>
+    </div>
+    <div class="kpi" id="kpi3">
+      <div class="kpi-glow" style="background:var(--gold)"></div>
+      <div class="kpi-label">متوسط RR</div>
+      <div class="kpi-val" id="k3" style="color:var(--gold)">0:0</div>
+      <div class="kpi-sub"><span id="k3s">Risk Reward Ratio</span></div>
+    </div>
+    <div class="kpi" id="kpi4">
+      <div class="kpi-glow" style="background:var(--red)"></div>
+      <div class="kpi-label">Max Drawdown</div>
+      <div class="kpi-val" id="k4" style="color:#ff6b6b">0%</div>
+      <div class="kpi-sub"><span id="k4s">أكبر انخفاض</span></div>
+    </div>
+    <div class="kpi" id="kpi5">
+      <div class="kpi-glow" style="background:var(--purple)"></div>
+      <div class="kpi-label">إجمالي الصفقات</div>
+      <div class="kpi-val" id="k5" style="color:var(--purple)">0</div>
+      <div class="kpi-sub"><span id="k5s">صفقة مسجلة</span></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">📈 منحنى الرصيد <span style="font-size:.6rem;color:var(--teal);background:rgba(0,245,212,.06);padding:2px 8px;border-radius:20px;font-family:'IBM Plex Mono',monospace;">LIVE</span></div>
+      <div class="chart-sub">تطور رأس المال بمرور الوقت</div>
+      <div class="chart-wrap"><canvas id="balanceChart" height="160"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🎯 توزيع الأزواج</div>
+      <div class="chart-sub">أكثر الأزواج تداولاً</div>
+      <div class="chart-wrap"><canvas id="pairsChart" height="160"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="bottom-row">
+    <div class="chart-card">
+      <div class="chart-title">📅 أيام الأسبوع</div>
+      <div class="chart-sub">أفضل وأسوأ أيام التداول</div>
+      <div class="chart-wrap"><canvas id="daysChart" height="140"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">⏰ أوقات التداول</div>
+      <div class="chart-sub">توزيع الصفقات بالساعة</div>
+      <div class="chart-wrap"><canvas id="hoursChart" height="140"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📊 Win vs Loss</div>
+      <div class="chart-sub">توزيع النتائج</div>
+      <div class="chart-wrap"><canvas id="winLossChart" height="140"></canvas></div>
+    </div>
+  </div>
+
+  <!-- AI PANEL -->
+  <div class="ai-panel">
+    <div class="ai-header">
+      <div class="ai-avatar">🤖</div>
+      <div>
+        <div class="ai-name">EdgeBot AI Coach</div>
+        <div class="ai-status">● ANALYZING YOUR PERFORMANCE</div>
+      </div>
+    </div>
+    <div class="ai-insights" id="aiInsights">
+      <div class="ai-insight">
+        <div class="ai-insight-icon">📊</div>
+        <div class="ai-insight-title" style="color:var(--teal)">تحليل الأداء</div>
+        <div class="ai-insight-desc" id="ai1">جارٍ تحليل بياناتك...</div>
+      </div>
+      <div class="ai-insight">
+        <div class="ai-insight-icon">⚠️</div>
+        <div class="ai-insight-title" style="color:var(--gold)">تحذير</div>
+        <div class="ai-insight-desc" id="ai2">جارٍ التحليل...</div>
+      </div>
+      <div class="ai-insight">
+        <div class="ai-insight-icon">🎯</div>
+        <div class="ai-insight-title" style="color:var(--purple)">توصية</div>
+        <div class="ai-insight-desc" id="ai3">جارٍ التحليل...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAST TRADES -->
+  <div class="trades-card">
+    <div class="trades-header">
+      <div style="font-size:.88rem;font-weight:700">آخر الصفقات</div>
+      <a href="trades.html" style="font-size:.72rem;color:var(--teal);text-decoration:none;">عرض الكل ←</a>
+    </div>
+    <div id="tradesWrap">
+      <div class="loading"><div class="spinner"></div><span>جارٍ التحميل...</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TICKER -->
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+let user=null, trades=[], charts={}
+
+// تحقق من الجلسة
+const{data:{session}}=await sb.auth.getSession()
+if(!session){location.href='index.html';}
+else{user=session.user;document.getElementById('userEmail').textContent=user.email;}
+
+// التاريخ
+const now=new Date()
+document.getElementById('dateStr').textContent=now.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+
+// تسجيل الخروج
+window.logout=async()=>{await sb.auth.signOut();location.href='index.html';}
+
+// تحميل البيانات
+window.loadData=async function(){
+  const{data,error}=await sb.from('trades').select('*').eq('user_id',user.id).order('created_at',{ascending:true})
+  if(error){console.error(error);return;}
+  trades=data||[]
+  document.getElementById('tradesBadge').textContent=trades.length
+  calcKPIs()
+  renderCharts()
+  renderTrades()
+  aiAnalysis()
+}
+
+// حسابات KPIs دقيقة
+function calcKPIs(){
+  if(!trades.length){
+    animateCount('k0','$0',var_teal)
+    return
+  }
+
+  // إجمالي P&L
+  const totalPnl=trades.reduce((s,t)=>s+(t.pnl||0),0)
+  const wins=trades.filter(t=>t.result==='win')
+  const losses=trades.filter(t=>t.result==='loss')
+
+  // Win Rate
+  const winRate=trades.length>0?((wins.length/trades.length)*100):0
+
+  // Profit Factor = إجمالي الأرباح ÷ إجمالي الخسائر
+  const grossProfit=wins.reduce((s,t)=>s+(t.pnl||0),0)
+  const grossLoss=Math.abs(losses.reduce((s,t)=>s+(t.pnl||0),0))
+  const pf=grossLoss>0?(grossProfit/grossLoss):grossProfit>0?999:0
+
+  // Max Drawdown
+  let peak=0,maxDD=0,running=0
+  trades.forEach(t=>{running+=(t.pnl||0);if(running>peak)peak=running;const dd=peak>0?((peak-running)/peak)*100:0;if(dd>maxDD)maxDD=dd})
+
+  // تحديث الهيدر
+  document.getElementById('hdrWin').textContent=winRate.toFixed(1)+'%'
+  document.getElementById('hdrPnl').textContent=(totalPnl>=0?'+':'')+totalPnl.toFixed(0)+'$'
+  document.getElementById('hdrPnl').style.color=totalPnl>=0?'var(--green)':'#ff6b6b'
+
+  // KPIs مع أنيميشن
+  animateVal('k0',(totalPnl>=0?'+':'')+totalPnl.toFixed(0),'$',totalPnl>=0?'var(--teal)':'#ff6b6b')
+  animateVal('k1',winRate.toFixed(1),'%','var(--green)')
+  animateVal('k2',pf>99?'∞':pf.toFixed(2),'','var(--blue)')
+  document.getElementById('k3').textContent='1:'+(winRate/50*2).toFixed(1)
+  animateVal('k4',maxDD.toFixed(1),'%','#ff6b6b')
+  animateVal('k5',trades.length,'','var(--purple)')
+}
+
+function animateVal(id,val,suffix,color){
+  const el=document.getElementById(id)
+  el.style.color=color
+  el.classList.remove('count-anim')
+  void el.offsetWidth
+  el.textContent=(suffix==='$'?'$':'')+val+(suffix!=='$'?suffix:'')
+  el.classList.add('count-anim')
+}
+
+// الرسوم البيانية
+function renderCharts(){
+  const cOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(9,12,24,.95)',titleColor:'#e8f0fe',bodyColor:'#6b84a8',borderColor:'rgba(0,245,212,.15)',borderWidth:1}},scales:{x:{grid:{color:'rgba(26,37,64,.3)',drawBorder:false},ticks:{color:'#3a4f6e',font:{size:9}}},y:{grid:{color:'rgba(26,37,64,.3)',drawBorder:false},ticks:{color:'#3a4f6e',font:{size:9}}}}}
+
+  // منحنى الرصيد
+  let running=0
+  const balanceData=trades.map(t=>{running+=(t.pnl||0);return+running.toFixed(2)})
+  const balLabels=trades.map((_,i)=>'#'+(i+1))
+
+  if(charts.balance)charts.balance.destroy()
+  charts.balance=new Chart(document.getElementById('balanceChart'),{
+    type:'line',
+    data:{labels:balLabels.length?balLabels:['بداية'],datasets:[{data:balanceData.length?balanceData:[0],borderColor:'#00f5d4',borderWidth:2,fill:true,backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);g.addColorStop(0,'rgba(0,245,212,.15)');g.addColorStop(1,'rgba(0,245,212,.0)');return g;},tension:.4,pointRadius:balanceData.length<20?3:0,pointBackgroundColor:'#00f5d4'}]},
+    options:{...cOpts}
+  })
+
+  // توزيع الأزواج
+  const pairCount={}
+  trades.forEach(t=>{pairCount[t.pair]=(pairCount[t.pair]||0)+1})
+  const pairLabels=Object.keys(pairCount)
+  const pairVals=Object.values(pairCount)
+  const pColors=['#00f5d4','#2979ff','#aa00ff','#ffb800','#00e676','#ff6b6b','#82b1ff']
+
+  if(charts.pairs)charts.pairs.destroy()
+  charts.pairs=new Chart(document.getElementById('pairsChart'),{
+    type:'doughnut',
+    data:{labels:pairLabels.length?pairLabels:['لا يوجد'],datasets:[{data:pairVals.length?pairVals:[1],backgroundColor:pColors,borderColor:'rgba(9,12,24,.8)',borderWidth:2}]},
+    options:{...cOpts,plugins:{...cOpts.plugins,legend:{display:true,position:'bottom',labels:{color:'#6b84a8',font:{size:9},padding:8}}},scales:{}}
+  })
+
+  // أيام الأسبوع
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
+  const dayPnl=[0,0,0,0,0,0,0]
+  trades.forEach(t=>{const d=new Date(t.created_at).getDay();dayPnl[d]+=(t.pnl||0)})
+
+  if(charts.days)charts.days.destroy()
+  charts.days=new Chart(document.getElementById('daysChart'),{
+    type:'bar',
+    data:{labels:days,datasets:[{data:dayPnl,backgroundColor:dayPnl.map(v=>v>=0?'rgba(0,230,118,.5)':'rgba(255,23,68,.5)'),borderColor:dayPnl.map(v=>v>=0?'#00e676':'#ff1744'),borderWidth:1,borderRadius:4}]},
+    options:{...cOpts}
+  })
+
+  // أوقات التداول
+  const hoursPnl=Array(24).fill(0)
+  trades.forEach(t=>{const h=new Date(t.created_at).getHours();hoursPnl[h]+=(t.pnl||0)})
+  const hLabels=Array.from({length:24},(_,i)=>i+':00')
+
+  if(charts.hours)charts.hours.destroy()
+  charts.hours=new Chart(document.getElementById('hoursChart'),{
+    type:'bar',
+    data:{labels:hLabels,datasets:[{data:hoursPnl,backgroundColor:'rgba(41,121,255,.4)',borderColor:'#2979ff',borderWidth:1,borderRadius:3}]},
+    options:{...cOpts}
+  })
+
+  // Win vs Loss
+  const wCount=trades.filter(t=>t.result==='win').length
+  const lCount=trades.filter(t=>t.result==='loss').length
+
+  if(charts.winLoss)charts.winLoss.destroy()
+  charts.winLoss=new Chart(document.getElementById('winLossChart'),{
+    type:'doughnut',
+    data:{labels:['ربح ✅','خسارة ❌'],datasets:[{data:[wCount||0,lCount||0],backgroundColor:['rgba(0,230,118,.5)','rgba(255,23,68,.5)'],borderColor:['#00e676','#ff1744'],borderWidth:2}]},
+    options:{...cOpts,plugins:{...cOpts.plugins,legend:{display:true,position:'bottom',labels:{color:'#6b84a8',font:{size:10},padding:10}}},scales:{}}
+  })
+}
+
+// عرض آخر الصفقات
+function renderTrades(){
+  const wrap=document.getElementById('tradesWrap')
+  if(!trades.length){
+    wrap.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><div>لا توجد صفقات بعد</div><button class="empty-btn" onclick="location.href='trades.html'">+ أضف أول صفقة</button></div>`
+    return
+  }
+  const last=trades.slice(-10).reverse()
+  wrap.innerHTML=`<table><thead><tr><th>#</th><th>الزوج</th><th>الاتجاه</th><th>P&L</th><th>النتيجة</th><th>التاريخ</th></tr></thead><tbody>${last.map((t,i)=>`<tr><td class="mono" style="color:#3a4f6e">${i+1}</td><td style="font-weight:700">${t.pair}</td><td><span class="badge ${t.direction==='buy'?'b-buy':'b-sell'}">${t.direction==='buy'?'▲ شراء':'▼ بيع'}</span></td><td class="${t.pnl>=0?'pnl-p':'pnl-n'}">${t.pnl>=0?'+':''}$${t.pnl}</td><td><span class="badge ${t.result==='win'?'b-win':'b-loss'}">${t.result==='win'?'✅ ربح':'❌ خسارة'}</span></td><td class="mono" style="color:#3a4f6e">${new Date(t.created_at).toLocaleDateString('ar')}</td></tr>`).join('')}</tbody></table>`
+}
+
+// تحليل AI
+function aiAnalysis(){
+  if(!trades.length){
+    document.getElementById('ai1').textContent='أضف صفقات لتبدأ التحليل'
+    document.getElementById('ai2').textContent='لا توجد بيانات كافية'
+    document.getElementById('ai3').textContent='ابدأ بتسجيل صفقاتك اليومية'
+    return
+  }
+  const wins=trades.filter(t=>t.result==='win')
+  const losses=trades.filter(t=>t.result==='loss')
+  const wr=((wins.length/trades.length)*100).toFixed(1)
+  const totalPnl=trades.reduce((s,t)=>s+(t.pnl||0),0)
+
+  // أكثر زوج ربحاً
+  const pairPnl={}
+  trades.forEach(t=>{pairPnl[t.pair]=(pairPnl[t.pair]||0)+(t.pnl||0)})
+  const bestPair=Object.entries(pairPnl).sort((a,b)=>b[1]-a[1])[0]
+
+  document.getElementById('ai1').textContent=`نسبة الفوز ${wr}% — ${totalPnl>=0?'أداء إيجابي 🎯':'تحتاج مراجعة الاستراتيجية ⚠️'}`
+  document.getElementById('ai2').textContent=losses.length>wins.length?'عدد الخسائر أكبر من الأرباح — راجع نقاط دخولك':'الأداء مقبول — حافظ على الانضباط'
+  document.getElementById('ai3').textContent=bestPair?`أفضل زوج لك: ${bestPair[0]} بربح $${bestPair[1].toFixed(0)}`:'سجّل المزيد من الصفقات للحصول على توصيات'
+}
+
+// TICKER
+const tData=[
+  {p:'XAUUSD',v:2345.8,u:true},{p:'EURUSD',v:1.0892,u:false},
+  {p:'GBPUSD',v:1.2654,u:true},{p:'BTCUSD',v:67420,u:true},
+  {p:'US30',v:38920,u:false},{p:'NAS100',v:17840,u:true},
+  {p:'USDJPY',v:149.82,u:false},{p:'ETHUSD',v:3420,u:true},
+  {p:'USOIL',v:82.4,u:false},{p:'XAGUSD',v:27.85,u:true},
+]
+const tEl=document.getElementById('ticker')
+function buildTicker(){
+  return[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v.toFixed(t.v>100?1:4)}</span></div>`).join('')
+}
+tEl.innerHTML=buildTicker()
+setInterval(()=>{
+  tData.forEach(t=>{const c=(Math.random()-.5)*(t.v>100?.5:.0005);t.v+=c;t.u=c>0;})
+  tEl.innerHTML=buildTicker()
+},3000)
+
+// تشغيل
+loadData()
+</script>
+</body>
+</html>
