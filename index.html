@@ -1,412 +1,642 @@
+
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Voquex — منصة التداول الذكية</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Voquex — يومية التداول الذكية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--teal:#00f5d4;--blue:#2979ff;--purple:#aa00ff;--gold:#ffb800;--green:#00e676;--red:#ff1744;--bg:#06080f;--panel:rgba(9,12,24,.95);}
-body{background:var(--bg);font-family:'Tajawal',sans-serif;height:100vh;overflow:hidden;position:relative;}
-canvas{position:fixed;inset:0;z-index:0;}
+:root{
+  --bg:#00020a;
+  --bg2:#030810;
+  --gold:#c8a45a;
+  --gold2:#e8c97a;
+  --gold3:#ffd060;
+  --green:#00e87a;
+  --red:#ff2d55;
+  --teal:#00c9a7;
+  --white:#eef2ff;
+  --dim:#2a3d56;
+  --dim2:#5a7a9a;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--white);font-family:'Tajawal',sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:rgba(200,164,90,.2);}
+
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* NAV */
+nav{position:fixed;top:0;inset-inline:0;z-index:500;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;border-bottom:1px solid rgba(200,164,90,.07);backdrop-filter:blur(40px);background:rgba(0,2,10,.75);}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:36px;}
+.nav-links a{font-size:.78rem;color:var(--dim2);text-decoration:none;letter-spacing:.5px;transition:color .2s;}
+.nav-links a:hover{color:var(--gold2);}
+.nav-btns{display:flex;gap:10px;}
+.n-in{padding:8px 18px;border:1px solid rgba(200,164,90,.2);border-radius:6px;color:var(--gold);font-family:'Tajawal',sans-serif;font-size:.78rem;background:transparent;cursor:pointer;text-decoration:none;transition:all .2s;}
+.n-in:hover{background:rgba(200,164,90,.06);}
+.n-go{padding:8px 20px;background:linear-gradient(135deg,var(--gold3),var(--gold),#8a6520);border:none;border-radius:6px;color:#000;font-family:'Tajawal',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .25s;}
+.n-go:hover{box-shadow:0 4px 24px rgba(200,164,90,.35);transform:translateY(-1px);}
+.burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;}
+.burger span{width:22px;height:1.5px;background:var(--gold);display:block;}
+
+/* MOB NAV */
+.mob{display:none;position:fixed;inset:0;background:rgba(0,2,10,.98);z-index:499;flex-direction:column;align-items:center;justify-content:center;gap:28px;}
+.mob.on{display:flex;}
+.mob a{font-size:1.2rem;color:var(--white);text-decoration:none;font-family:'Syne',sans-serif;font-weight:700;}
+.mob a:hover{color:var(--gold2);}
+.mob-btns{display:flex;gap:12px;margin-top:8px;}
+
+/* HERO */
+.hero{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;padding:66px 5% 0;gap:60px;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:10%;right:8%;width:500px;height:500px;background:radial-gradient(circle,rgba(200,164,90,.055) 0%,transparent 65%);pointer-events:none;}
+
+.hl{flex:1;padding:50px 0 80px;}
+.h-chip{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;background:rgba(200,164,90,.05);border:1px solid rgba(200,164,90,.18);border-radius:3px;font-size:.6rem;color:var(--gold);font-family:'IBM Plex Mono',monospace;margin-bottom:36px;letter-spacing:2px;text-transform:uppercase;}
+.chip-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+.h-title{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,5.5vw,5rem);font-weight:900;line-height:1.05;letter-spacing:-2px;}
+.ht1{display:block;color:var(--white);}
+.ht2{display:block;background:linear-gradient(90deg,var(--gold3),var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ht3{display:block;color:rgba(238,242,255,.2);font-size:78%;}
+
+.h-desc{font-size:.93rem;color:var(--dim2);line-height:2;margin:28px 0 38px;max-width:440px;font-weight:300;}
+.h-desc b{color:var(--gold2);font-weight:500;}
+
+.h-btns{display:flex;gap:14px;margin-bottom:48px;flex-wrap:wrap;}
+.h-cta{padding:15px 36px;background:linear-gradient(135deg,var(--gold3),var(--gold2),var(--gold),#8a6520);border:none;border-radius:10px;color:#000;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .3s;position:relative;overflow:hidden;}
+.h-cta:hover{transform:translateY(-3px);box-shadow:0 18px 50px rgba(200,164,90,.38);}
+.h-sec{padding:15px 24px;background:transparent;border:1px solid rgba(238,242,255,.08);border-radius:10px;color:var(--dim2);font-family:'Tajawal',sans-serif;font-size:1rem;cursor:pointer;text-decoration:none;transition:all .3s;}
+.h-sec:hover{border-color:rgba(200,164,90,.25);color:var(--gold);}
+
+.h-proof{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.h-avs{display:flex;}
+.h-avs div{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg);background:linear-gradient(135deg,#1a2a3a,#0a1525);display:flex;align-items:center;justify-content:center;font-size:.8rem;margin-right:-9px;}
+.h-proof-txt{font-size:.72rem;color:var(--dim2);line-height:1.6;}
+.h-proof-txt strong{color:var(--gold2);display:block;}
+.h-divdr{width:1px;height:30px;background:rgba(200,164,90,.1);}
+.h-stars{color:var(--gold3);font-size:.78rem;display:block;}
+.h-rate{font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:var(--gold2);}
+
+/* HERO RIGHT */
+.hr{flex:0 0 480px;position:relative;}
+.term{background:rgba(3,8,16,.97);border:1px solid rgba(200,164,90,.1);border-radius:18px;overflow:hidden;box-shadow:0 50px 150px rgba(0,0,0,.9),inset 0 1px 0 rgba(200,164,90,.07);}
+.tbar{padding:12px 18px;background:rgba(200,164,90,.03);border-bottom:1px solid rgba(200,164,90,.07);display:flex;align-items:center;gap:7px;}
+.td{width:11px;height:11px;border-radius:50%;}
+.td-r{background:#ff5f57;}.td-y{background:#febc2e;}.td-g{background:#28c840;}
+.t-ttl{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim2);margin-right:auto;letter-spacing:1px;}
+.tbody{padding:18px;}
+
+.chart-wrap{background:rgba(200,164,90,.02);border:1px solid rgba(200,164,90,.06);border-radius:10px;padding:12px;margin-bottom:12px;position:relative;}
+#tChart{width:100%;height:120px;display:block;}
+.chart-info{position:absolute;top:14px;right:14px;text-align:left;}
+.ci-p{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--dim2);}
+.ci-v{font-family:'IBM Plex Mono',monospace;font-size:1.05rem;font-weight:700;color:var(--white);}
+.ci-c{font-family:'IBM Plex Mono',monospace;font-size:.6rem;}
+
+.t-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
+.tsb{background:rgba(200,164,90,.03);border:1px solid rgba(200,164,90,.07);border-radius:8px;padding:9px 11px;}
+.tsb-l{font-family:'IBM Plex Mono',monospace;font-size:.5rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.tsb-v{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:700;}
+.vg{color:var(--green);}.vgold{color:var(--gold2);}.vw{color:var(--white);}
+.tsb-s{font-size:.48rem;color:var(--dim2);margin-top:1px;}
+
+.t-trades-hdr{display:flex;justify-content:space-between;margin-bottom:7px;}
+.tth{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--dim2);letter-spacing:1px;text-transform:uppercase;}
+.ttlive{font-family:'IBM Plex Mono',monospace;font-size:.52rem;color:var(--green);display:flex;align-items:center;gap:4px;}
+.live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.5s infinite;}
+.trow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(200,164,90,.04);}
+.trow:last-child{border:none;}
+.tbadge{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.55rem;font-weight:700;}
+.tb-b{background:rgba(0,232,122,.07);border:1px solid rgba(0,232,122,.15);color:var(--green);}
+.tb-s{background:rgba(255,45,85,.07);border:1px solid rgba(255,45,85,.15);color:var(--red);}
+.tr-info{flex:1;}
+.tr-pair{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:600;}
+.tr-time{font-size:.54rem;color:var(--dim2);font-family:'IBM Plex Mono',monospace;}
+.tr-pnl{font-family:'IBM Plex Mono',monospace;font-size:.76rem;font-weight:700;}
+.pos{color:var(--green);}.neg{color:var(--red);}
+
+/* FLOAT CARDS */
+.fc{position:absolute;background:rgba(3,8,16,.96);border:1px solid rgba(200,164,90,.1);border-radius:12px;padding:13px 16px;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.7);}
+.fc-a{top:-30px;right:-25px;animation:fa 5s ease-in-out infinite;}
+.fc-b{bottom:-20px;right:-30px;animation:fb 4.5s ease-in-out infinite;}
+@keyframes fa{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+@keyframes fb{0%,100%{transform:translateY(0);}50%{transform:translateY(12px);}}
+.fc-l{font-family:'IBM Plex Mono',monospace;font-size:.5rem;color:var(--dim2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.fc-v{font-family:'IBM Plex Mono',monospace;font-size:1.05rem;font-weight:700;}
+.fc-s{font-family:'IBM Plex Mono',monospace;font-size:.56rem;margin-top:3px;}
 
 /* TICKER */
-.ticker{position:fixed;top:0;left:0;right:0;height:28px;background:rgba(6,8,15,.98);border-bottom:1px solid rgba(0,245,212,.06);display:flex;align-items:center;overflow:hidden;z-index:200;}
-.ticker-track{display:flex;gap:28px;animation:tick 40s linear infinite;white-space:nowrap;padding:0 20px;}
+.ticker{position:relative;z-index:3;background:rgba(3,8,16,.9);border-top:1px solid rgba(200,164,90,.05);border-bottom:1px solid rgba(200,164,90,.05);padding:8px 0;overflow:hidden;}
+.tick-inner{display:flex;gap:48px;animation:tick 38s linear infinite;white-space:nowrap;}
+.ti{display:flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:.64rem;}
+.ti-n{color:var(--dim2);}.ti-p{color:var(--white);}
+.ti-u{color:var(--green);}.ti-d{color:var(--red);}
+.ti-sep{color:rgba(200,164,90,.15);}
 @keyframes tick{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
-.tick-item{font-family:'IBM Plex Mono',monospace;font-size:.6rem;display:flex;gap:5px;align-items:center;}
-.tick-pair{color:#3a4f6e;}
-.tick-up{color:#00e676;}
-.tick-down{color:#ff6b6b;}
 
-/* SCREENS */
-.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:28px;opacity:0;pointer-events:none;transition:opacity .6s ease,transform .6s ease;}
-.screen.active{opacity:1;pointer-events:all;transform:translateX(0)!important;}
-.screen.slide-left{transform:translateX(-60px);}
-.screen.slide-right{transform:translateX(60px);}
+/* SECTIONS */
+.sec{position:relative;z-index:2;padding:100px 5%;}
+.chip{display:inline-block;padding:4px 12px;border:1px solid rgba(200,164,90,.2);border-radius:2px;font-size:.58rem;color:var(--gold);font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.sec-h{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,3.5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:14px;letter-spacing:-.5px;}
+.sec-p{font-size:.88rem;color:var(--dim2);line-height:1.9;font-weight:300;}
 
-/* ONBOARDING */
-.ob-wrap{max-width:480px;width:100%;padding:24px;text-align:center;}
-.ob-icon{font-size:4rem;margin-bottom:20px;animation:iconFloat 3s ease-in-out infinite;}
-@keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-.ob-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,212,.06);border:1px solid rgba(0,245,212,.12);border-radius:30px;padding:5px 16px;font-size:.65rem;color:var(--teal);font-family:'IBM Plex Mono',monospace;letter-spacing:2px;margin-bottom:20px;}
-.ob-title{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1.15;margin-bottom:14px;}
-.ob-desc{font-size:.95rem;color:#6b84a8;line-height:1.8;margin-bottom:32px;max-width:380px;margin-inline:auto;}
-.ob-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
-.ob-feat{background:rgba(15,21,37,.6);border:1px solid rgba(26,37,64,.6);border-radius:12px;padding:14px;text-align:right;}
-.ob-feat-icon{font-size:1.2rem;margin-bottom:6px;}
-.ob-feat-title{font-size:.8rem;font-weight:700;margin-bottom:3px;}
-.ob-feat-sub{font-size:.68rem;color:#3a4f6e;}
+/* FEATURES */
+.feat-sec{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);}
+.feat-head{text-align:center;margin-bottom:60px;}
+.feat-head .sec-p{max-width:460px;margin:0 auto;}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);background:rgba(200,164,90,.05);gap:1px;border-radius:16px;overflow:hidden;border:1px solid rgba(200,164,90,.05);}
+.feat-cell{background:var(--bg2);padding:36px 30px;transition:background .3s;position:relative;overflow:hidden;}
+.feat-cell::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,164,90,.4),transparent);transform:scaleX(0);transition:transform .5s;}
+.feat-cell:hover{background:rgba(200,164,90,.02);}
+.feat-cell:hover::after{transform:scaleX(1);}
+.fn{font-family:'IBM Plex Mono',monospace;font-size:.54rem;color:rgba(200,164,90,.3);letter-spacing:1px;margin-bottom:20px;}
+.fico{width:46px;height:46px;border-radius:10px;background:rgba(200,164,90,.06);border:1px solid rgba(200,164,90,.1);display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:18px;}
+.ft{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:9px;}
+.fb{font-size:.75rem;color:var(--dim2);line-height:1.85;}
+.ftag{margin-top:16px;font-size:.54rem;font-family:'IBM Plex Mono',monospace;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;}
 
-/* DOTS */
-.ob-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
-.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.1);transition:all .3s;cursor:pointer;}
-.dot.active{width:24px;background:var(--teal);}
+/* METRICS */
+.metrics-sec{padding:100px 5%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:32px;}
+.mc{background:var(--bg2);border:1px solid rgba(200,164,90,.07);border-radius:12px;padding:22px;transition:all .3s;}
+.mc:hover{border-color:rgba(200,164,90,.2);transform:translateY(-3px);}
+.mc-big{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:4px;line-height:1;}
+.mc-l{font-size:.7rem;color:var(--dim2);font-weight:300;}
 
-/* BUTTONS */
-.btn-next{padding:14px 40px;background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(41,121,255,.12));border:1px solid rgba(0,245,212,.25);border-radius:30px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
-.btn-next:hover{box-shadow:0 0 30px rgba(0,245,212,.15);transform:translateY(-2px);}
-.btn-skip{position:fixed;top:36px;left:20px;font-size:.75rem;color:#3a4f6e;cursor:pointer;transition:color .2s;z-index:300;background:none;border:none;font-family:'Tajawal',sans-serif;}
-.btn-skip:hover{color:var(--teal);}
+/* AI */
+.ai-sec{padding:100px 5%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;background:var(--bg2);}
+.ai-box{background:var(--bg);border:1px solid rgba(200,164,90,.09);border-radius:16px;overflow:hidden;}
+.ai-hdr{padding:13px 18px;border-bottom:1px solid rgba(200,164,90,.07);display:flex;align-items:center;gap:9px;}
+.ai-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 2s infinite;}
+.ai-nm{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:600;}
+.ai-bdg{font-size:.52rem;background:rgba(0,232,122,.06);border:1px solid rgba(0,232,122,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-family:'IBM Plex Mono',monospace;margin-right:auto;}
+.ai-body{padding:18px;min-height:280px;display:flex;flex-direction:column;gap:11px;max-height:320px;overflow-y:auto;}
+.ai-m{padding:10px 14px;border-radius:11px;font-size:.77rem;line-height:1.75;max-width:88%;}
+.ai-bot{background:rgba(200,164,90,.04);border:1px solid rgba(200,164,90,.09);align-self:flex-start;}
+.ai-usr{background:rgba(26,111,255,.08);border:1px solid rgba(26,111,255,.15);align-self:flex-end;}
+.ai-typ{display:flex;gap:4px;padding:10px 14px;align-self:flex-start;}
+.ai-typ span{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:typ .8s infinite;}
+.ai-typ span:nth-child(2){animation-delay:.15s;}
+.ai-typ span:nth-child(3){animation-delay:.3s;}
+@keyframes typ{0%,100%{transform:translateY(0);opacity:.3;}50%{transform:translateY(-5px);opacity:1;}}
+.ai-ftr{padding:12px 16px;border-top:1px solid rgba(200,164,90,.07);display:flex;gap:8px;}
+.ai-inp{flex:1;background:rgba(200,164,90,.03);border:1px solid rgba(200,164,90,.09);border-radius:8px;padding:9px 12px;color:var(--white);font-family:'Tajawal',sans-serif;font-size:.78rem;outline:none;}
+.ai-inp:focus{border-color:rgba(200,164,90,.28);}
+.ai-inp::placeholder{color:var(--dim);}
+.ai-snd{padding:9px 15px;background:linear-gradient(135deg,var(--gold3),var(--gold));border:none;border-radius:8px;color:#000;font-size:.9rem;cursor:pointer;font-weight:700;}
+.ai-feats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:24px;}
+.af{display:flex;gap:9px;padding:13px;background:rgba(200,164,90,.03);border:1px solid rgba(200,164,90,.06);border-radius:10px;transition:border-color .3s;}
+.af:hover{border-color:rgba(200,164,90,.15);}
+.af-i{font-size:.9rem;flex-shrink:0;margin-top:2px;}
+.af-t{font-size:.72rem;font-weight:700;margin-bottom:3px;}
+.af-d{font-size:.62rem;color:var(--dim2);line-height:1.5;}
 
-/* LOGIN */
-.login-wrap{max-width:400px;width:100%;padding:20px;}
-.login-logo{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:5px;text-align:center;margin-bottom:2px;}
-.login-sub{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:#3a4f6e;letter-spacing:3px;text-align:center;margin-bottom:20px;}
-.card{background:rgba(9,12,24,.94);border:1px solid rgba(0,245,212,.07);border-radius:20px;padding:26px;backdrop-filter:blur(40px);box-shadow:0 0 100px rgba(0,0,0,.7),0 0 40px rgba(0,245,212,.03);}
-.tabs{display:flex;gap:8px;margin-bottom:18px;}
-.tab{flex:1;padding:9px;background:transparent;border:1px solid rgba(26,37,64,.7);border-radius:10px;color:#3a4f6e;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .25s;}
-.tab.active{background:rgba(0,245,212,.06);border-color:rgba(0,245,212,.2);color:var(--teal);}
-.msg{padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:12px;display:none;}
-.msg.err{background:rgba(255,23,68,.07);border:1px solid rgba(255,23,68,.18);color:#ff6b6b;display:block;}
-.msg.ok{background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.18);color:#00e676;display:block;}
-.lbl{font-size:.68rem;color:#6b84a8;margin-bottom:5px;display:block;letter-spacing:.5px;}
-.inp-wrap{position:relative;margin-bottom:11px;}
-.inp{width:100%;padding:11px 14px;background:rgba(6,8,15,.7);border:1px solid rgba(26,37,64,.8);border-radius:10px;color:#e8f0fe;font-family:'Tajawal',sans-serif;font-size:.85rem;outline:none;transition:all .25s;}
-.inp:focus{border-color:rgba(0,245,212,.28);box-shadow:0 0 0 3px rgba(0,245,212,.04);}
-.inp::placeholder{color:#3a4f6e;}
-.inp-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#3a4f6e;font-size:.85rem;transition:color .2s;border:none;background:none;}
-.inp-icon:hover{color:var(--teal);}
-.row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.remember{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#3a4f6e;cursor:pointer;}
-.remember input{accent-color:var(--teal);}
-.forgot{font-size:.72rem;color:#3a4f6e;cursor:pointer;transition:color .2s;background:none;border:none;font-family:'Tajawal',sans-serif;}
-.forgot:hover{color:var(--teal);}
-.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,245,212,.1),rgba(41,121,255,.1));border:1px solid rgba(0,245,212,.22);border-radius:12px;color:var(--teal);font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s;margin-bottom:10px;}
-.btn-auth:hover{box-shadow:0 0 25px rgba(0,245,212,.12);transform:translateY(-1px);}
-.btn-auth:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-.divider{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.div-line{flex:1;height:1px;background:rgba(26,37,64,.7);}
-.div-txt{font-size:.65rem;color:#3a4f6e;}
-.btn-google{width:100%;padding:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;color:#6b84a8;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-google:hover{background:rgba(255,255,255,.05);color:#e8f0fe;border-color:rgba(255,255,255,.12);}
+/* NUMBERS */
+.nums{border-top:1px solid rgba(200,164,90,.05);border-bottom:1px solid rgba(200,164,90,.05);}
+.nums-grid{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(200,164,90,.04);gap:1px;}
+.nc{background:var(--bg);padding:50px 20px;text-align:center;}
+.n-big{font-family:'IBM Plex Mono',monospace;font-size:2.8rem;font-weight:700;background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;line-height:1;margin-bottom:10px;}
+.n-lbl{font-size:.73rem;color:var(--dim2);font-weight:300;}
 
-/* LANG BTN */
-.lang-btn{position:fixed;top:36px;right:20px;z-index:300;background:rgba(9,12,24,.9);border:1px solid rgba(26,37,64,.8);border-radius:30px;padding:5px 12px;font-size:.7rem;color:#6b84a8;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
-.lang-btn:hover{border-color:rgba(0,245,212,.2);color:var(--teal);}
-.lang-dropdown{position:fixed;top:62px;right:20px;z-index:300;background:rgba(9,12,24,.98);border:1px solid rgba(26,37,64,.8);border-radius:14px;padding:8px;display:none;flex-direction:column;gap:3px;min-width:160px;box-shadow:0 10px 40px rgba(0,0,0,.5);}
-.lang-dropdown.open{display:flex;}
-.lang-opt{padding:8px 12px;border-radius:8px;font-size:.8rem;color:#6b84a8;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
-.lang-opt:hover,.lang-opt.active{background:rgba(0,245,212,.06);color:var(--teal);}
+/* PRICING */
+.price-sec{padding:100px 5%;background:var(--bg2);}
+.price-hdr{text-align:center;margin-bottom:56px;}
+.p-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;align-items:start;}
+.pc{background:var(--bg);border:1px solid rgba(200,164,90,.07);border-radius:16px;padding:28px 20px;position:relative;transition:all .3s;}
+.pc:hover{transform:translateY(-6px);border-color:rgba(200,164,90,.18);}
+.pc.hot{border-color:rgba(200,164,90,.22);background:linear-gradient(160deg,rgba(200,164,90,.04),var(--bg));}
+.hot-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold3),var(--gold));color:#000;font-size:.56rem;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;}
+.p-name{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--dim2);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.p-price{font-family:'IBM Plex Mono',monospace;font-size:2.6rem;font-weight:700;line-height:1;margin-bottom:4px;}
+.p-period{font-size:.66rem;color:var(--dim2);margin-bottom:20px;}
+.p-div{height:1px;background:rgba(200,164,90,.07);margin-bottom:16px;}
+.p-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.p-list li{font-size:.72rem;display:flex;align-items:center;gap:7px;color:var(--dim2);}
+.p-list li.y{color:var(--white);}
+.p-list li.y::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;}
+.p-list li.n::before{content:'—';color:var(--dim);flex-shrink:0;}
+.p-btn{width:100%;padding:12px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .3s;border:1px solid rgba(200,164,90,.18);background:transparent;color:var(--gold);text-decoration:none;display:block;text-align:center;}
+.p-btn:hover{background:rgba(200,164,90,.06);}
+.p-btn.g{background:linear-gradient(135deg,var(--gold3),var(--gold),#8a6520);border:none;color:#000;}
+.p-btn.g:hover{box-shadow:0 8px 28px rgba(200,164,90,.35);}
+
+/* TESTI */
+.testi-sec{padding:100px 5%;}
+.testi-hdr{text-align:center;margin-bottom:56px;}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.tc{background:var(--bg2);border:1px solid rgba(200,164,90,.07);border-radius:16px;padding:26px;transition:all .3s;}
+.tc:hover{border-color:rgba(200,164,90,.2);transform:translateY(-5px);}
+.tc-q{font-size:2.2rem;line-height:1;color:rgba(200,164,90,.1);font-family:'Syne',sans-serif;margin-bottom:4px;}
+.tc-txt{font-size:.79rem;color:#7a93b8;line-height:1.9;margin-bottom:18px;}
+.tc-bot{display:flex;justify-content:space-between;align-items:flex-end;}
+.tc-name{font-size:.79rem;font-weight:700;margin-bottom:2px;}
+.tc-role{font-size:.6rem;color:var(--dim2);}
+.tc-stars{color:var(--gold3);font-size:.72rem;letter-spacing:1px;}
+
+/* CTA */
+.cta-sec{padding:120px 5%;text-align:center;position:relative;z-index:2;overflow:hidden;}
+.cta-sec::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(200,164,90,.05) 0%,transparent 65%);pointer-events:none;}
+.cta-h{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,4.5vw,4rem);font-weight:900;line-height:1.08;margin-bottom:18px;letter-spacing:-1px;position:relative;}
+.cta-h span{background:linear-gradient(90deg,var(--gold3),var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.cta-sub{font-size:.9rem;color:var(--dim2);margin-bottom:36px;position:relative;}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;}
+
+/* FOOTER */
+footer{padding:60px 5% 28px;border-top:1px solid rgba(200,164,90,.05);position:relative;z-index:2;}
+.fg{display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;gap:44px;margin-bottom:44px;}
+.fl-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:12px;}
+.fl-p{font-size:.74rem;color:var(--dim2);line-height:1.85;max-width:220px;font-weight:300;}
+.fl-soc{display:flex;gap:8px;margin-top:18px;}
+.fsoc{width:34px;height:34px;border:1px solid rgba(200,164,90,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;cursor:pointer;text-decoration:none;color:var(--dim2);transition:all .2s;}
+.fsoc:hover{border-color:rgba(200,164,90,.3);color:var(--gold);}
+.fcol h4{font-size:.6rem;font-family:'IBM Plex Mono',monospace;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.fcol a{display:block;font-size:.72rem;color:var(--dim2);text-decoration:none;margin-bottom:10px;transition:color .2s;font-weight:300;}
+.fcol a:hover{color:var(--gold2);}
+.f-bot{display:flex;justify-content:space-between;padding-top:20px;border-top:1px solid rgba(200,164,90,.05);}
+.f-copy{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);}
 
 /* SUPPORT */
-.support{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:.62rem;color:#3a4f6e;z-index:200;text-align:center;}
-.support a{color:#3a4f6e;text-decoration:none;transition:color .2s;}
-.support a:hover{color:var(--teal);}
+.sup{position:fixed;bottom:26px;left:26px;z-index:600;}
+.sup-btn{width:52px;height:52px;background:linear-gradient(135deg,var(--gold3),var(--gold),#8a6520);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 36px rgba(200,164,90,.38);transition:all .3s;position:relative;}
+.sup-btn:hover{transform:scale(1.1);}
+.sup-btn svg{width:20px;height:20px;fill:#000;}
+.sup-ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(200,164,90,.22);animation:ring 2.5s ease-out infinite;}
+@keyframes ring{0%{transform:scale(1);opacity:.8;}100%{transform:scale(1.6);opacity:0;}}
+.sup-tip{position:absolute;bottom:60px;left:0;background:rgba(3,8,16,.98);border:1px solid rgba(200,164,90,.14);border-radius:10px;padding:9px 13px;white-space:nowrap;font-size:.68rem;opacity:0;pointer-events:none;transition:all .25s;transform:translateY(6px);}
+.sup:hover .sup-tip{opacity:1;transform:translateY(0);}
 
-/* MODAL */
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);z-index:999;display:none;align-items:center;justify-content:center;}
-.modal-ov.open{display:flex;}
-.modal{background:rgba(9,12,24,.99);border:1px solid rgba(0,245,212,.1);border-radius:18px;padding:26px;width:340px;animation:mUp .3s ease;}
-@keyframes mUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.modal-title{font-size:.95rem;font-weight:700;color:var(--teal);margin-bottom:4px;}
-.modal-sub{font-size:.72rem;color:#3a4f6e;margin-bottom:16px;}
-.modal-btns{display:flex;gap:8px;margin-top:14px;}
-.mbtn{flex:1;padding:9px;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
-.mbtn.p{background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.18);color:var(--teal);}
-.mbtn.s{background:transparent;border:1px solid rgba(26,37,64,.8);color:#6b84a8;}
+/* REVEAL */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease;}
+.rv.in{opacity:1;transform:translateY(0);}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .hero{flex-direction:column;text-align:center;gap:36px;padding-bottom:60px;}
+  .hl{padding-top:30px;padding-bottom:0;}
+  .h-desc{margin:22px auto 34px;}
+  .h-btns{justify-content:center;}
+  .h-proof{justify-content:center;}
+  .hr{flex:none;width:100%;max-width:460px;margin:0 auto;}
+  .fc-a,.fc-b{display:none;}
+  .metrics-sec{grid-template-columns:1fr;gap:36px;}
+  .ai-sec{grid-template-columns:1fr;gap:36px;}
+  .feat-grid{grid-template-columns:repeat(2,1fr);}
+  .nums-grid{grid-template-columns:repeat(2,1fr);}
+  .p-grid{grid-template-columns:repeat(2,1fr);}
+  .t-grid{grid-template-columns:repeat(2,1fr);}
+  .fg{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:680px){
+  .nav-links,.nav-btns{display:none;}
+  .burger{display:flex;}
+  .feat-grid{grid-template-columns:1fr;}
+  .nums-grid{grid-template-columns:1fr 1fr;}
+  .p-grid{grid-template-columns:1fr;}
+  .t-grid{grid-template-columns:1fr;}
+  .fg{grid-template-columns:1fr;}
+  .f-bot{flex-direction:column;gap:6px;text-align:center;}
+  .m-grid{grid-template-columns:1fr 1fr;}
+  .ai-feats{grid-template-columns:1fr;}
+  .t-stats{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="bgCanvas"></canvas>
 
-<!-- TICKER -->
-<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+<nav>
+  <div class="nav-logo">VOQUEX</div>
+  <div class="nav-links">
+    <a href="#features">المميزات</a>
+    <a href="#ai">الذكاء الاصطناعي</a>
+    <a href="#pricing">الأسعار</a>
+    <a href="#testimonials">المتداولون</a>
+  </div>
+  <div class="nav-btns">
+    <a href="login.html" class="n-in">دخول</a>
+    <a href="login.html" class="n-go">ابدأ مجاناً ←</a>
+  </div>
+  <button class="burger" onclick="document.getElementById('mob').classList.toggle('on')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-<!-- LANG -->
-<button class="lang-btn" onclick="toggleLang()">🌐 <span id="langLabel">العربية</span> ▾</button>
-<div class="lang-dropdown" id="langDrop">
-  <div class="lang-opt active" onclick="setLang('ar','العربية','rtl',this)">🇸🇦 العربية</div>
-  <div class="lang-opt" onclick="setLang('en','English','ltr',this)">🇺🇸 English</div>
-  <div class="lang-opt" onclick="setLang('tr','Türkçe','ltr',this)">🇹🇷 Türkçe</div>
-  <div class="lang-opt" onclick="setLang('fr','Français','ltr',this)">🇫🇷 Français</div>
-  <div class="lang-opt" onclick="setLang('es','Español','ltr',this)">🇪🇸 Español</div>
-  <div class="lang-opt" onclick="setLang('de','Deutsch','ltr',this)">🇩🇪 Deutsch</div>
-  <div class="lang-opt" onclick="setLang('ru','Русский','ltr',this)">🇷🇺 Русский</div>
-  <div class="lang-opt" onclick="setLang('fa','فارسی','rtl',this)">🇮🇷 فارسی</div>
-  <div class="lang-opt" onclick="setLang('id','Indonesia','ltr',this)">🇮🇩 Indonesia</div>
-  <div class="lang-opt" onclick="setLang('ja','日本語','ltr',this)">🇯🇵 日本語</div>
-  <div class="lang-opt" onclick="setLang('zh','中文','ltr',this)">🇨🇳 中文</div>
-  <div class="lang-opt" onclick="setLang('pt','Português','ltr',this)">🇧🇷 Português</div>
-</div>
-
-<!-- SKIP -->
-<button class="btn-skip" id="skipBtn" onclick="goToLogin()">تخطي ←</button>
-
-<!-- ONBOARDING 1 -->
-<div class="screen active slide-right" id="ob1">
-  <div class="ob-wrap">
-    <div class="ob-badge">🚀 VOQUEX TRADING PLATFORM</div>
-    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite">📊</div>
-    <div class="ob-title">
-      <span style="background:linear-gradient(135deg,#00f5d4,#2979ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">تتبع صفقاتك</span><br>
-      بذكاء حقيقي
-    </div>
-    <div class="ob-desc">سجّل كل صفقة، اكتشف أنماطك، وطوّر استراتيجيتك بمساعدة الذكاء الاصطناعي</div>
-    <div class="ob-features">
-      <div class="ob-feat"><div class="ob-feat-icon">📈</div><div class="ob-feat-title" style="color:#00f5d4">تحليل تلقائي</div><div class="ob-feat-sub">لكل صفقة بالتفصيل</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">🤖</div><div class="ob-feat-title" style="color:#aa00ff">AI Coach</div><div class="ob-feat-sub">مدربك الشخصي</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">🛡️</div><div class="ob-feat-title" style="color:#ffb800">إدارة مخاطر</div><div class="ob-feat-sub">احمِ رأس مالك</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">🌍</div><div class="ob-feat-title" style="color:#2979ff">12 لغة</div><div class="ob-feat-sub">العربية أولاً</div></div>
-    </div>
-    <div class="ob-dots">
-      <div class="dot active" onclick="goTo(1)"></div>
-      <div class="dot" onclick="goTo(2)"></div>
-      <div class="dot" onclick="goTo(3)"></div>
-    </div>
-    <button class="btn-next" onclick="goTo(2)">التالي ←</button>
+<div class="mob" id="mob">
+  <a href="#features" onclick="document.getElementById('mob').classList.remove('on')">المميزات</a>
+  <a href="#ai" onclick="document.getElementById('mob').classList.remove('on')">الذكاء الاصطناعي</a>
+  <a href="#pricing" onclick="document.getElementById('mob').classList.remove('on')">الأسعار</a>
+  <a href="#testimonials" onclick="document.getElementById('mob').classList.remove('on')">المتداولون</a>
+  <div class="mob-btns">
+    <a href="login.html" class="n-in" onclick="document.getElementById('mob').classList.remove('on')">دخول</a>
+    <a href="login.html" class="n-go" onclick="document.getElementById('mob').classList.remove('on')">ابدأ مجاناً</a>
   </div>
 </div>
 
-<!-- ONBOARDING 2 -->
-<div class="screen slide-right" id="ob2">
-  <div class="ob-wrap">
-    <div class="ob-badge">💡 AI-POWERED INSIGHTS</div>
-    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite 0.5s">🤖</div>
-    <div class="ob-title">
-      <span style="background:linear-gradient(135deg,#aa00ff,#2979ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI Coach</span><br>
-      يعرف نقاط ضعفك
+<section class="hero">
+  <div class="hl">
+    <div class="h-chip"><span class="chip-dot"></span>LIVE · 47,832 ACTIVE TRADERS</div>
+    <h1 class="h-title">
+      <span class="ht1">افهم تداولك.</span>
+      <span class="ht2">طوّر أداءك.</span>
+      <span class="ht3">حقق الحرية.</span>
+    </h1>
+    <p class="h-desc">Voquex يحلل كل صفقة بدقة مخبرية — يكشف <b>نقاط ضعفك الخفية</b>، يتتبع أنماطك النفسية، ويعطيك <b>خطة ربح واضحة</b>. مدعوم بذكاء اصطناعي متقدم.</p>
+    <div class="h-btns">
+      <a href="login.html" class="h-cta">ابدأ مجاناً — بدون بطاقة</a>
+      <a href="#features" class="h-sec">↓ كيف يعمل</a>
     </div>
-    <div class="ob-desc">EdgeBot يحلل صفقاتك ويكتشف أنماط الخسارة والربح — ويعطيك توصيات شخصية دقيقة</div>
-    <div class="ob-features">
-      <div class="ob-feat"><div class="ob-feat-icon">🔍</div><div class="ob-feat-title" style="color:#aa00ff">كشف الأنماط</div><div class="ob-feat-sub">Revenge Trade تحذير</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">⏰</div><div class="ob-feat-title" style="color:#00f5d4">أفضل الأوقات</div><div class="ob-feat-sub">متى تتداول بدقة</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">🎯</div><div class="ob-feat-title" style="color:#ffb800">أهداف أسبوعية</div><div class="ob-feat-sub">خطة تطور حقيقية</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">📊</div><div class="ob-feat-title" style="color:#2979ff">Sharpe Ratio</div><div class="ob-feat-sub">معايير احترافية</div></div>
+    <div class="h-proof">
+      <div class="h-avs"><div>👨</div><div>👩</div><div>👨</div><div>👩</div><div>👨</div></div>
+      <div class="h-proof-txt"><strong>+47,000 متداول</strong>يثقون بـ Voquex يومياً</div>
+      <div class="h-divdr"></div>
+      <div><span class="h-stars">★★★★★</span><div class="h-rate">4.9 / 5.0</div></div>
     </div>
-    <div class="ob-dots">
-      <div class="dot" onclick="goTo(1)"></div>
-      <div class="dot active" onclick="goTo(2)"></div>
-      <div class="dot" onclick="goTo(3)"></div>
-    </div>
-    <button class="btn-next" onclick="goTo(3)">التالي ←</button>
   </div>
-</div>
 
-<!-- ONBOARDING 3 -->
-<div class="screen slide-right" id="ob3">
-  <div class="ob-wrap">
-    <div class="ob-badge">💎 JOIN 50,000+ TRADERS</div>
-    <div style="font-size:5rem;margin-bottom:16px;animation:iconFloat 3s ease-in-out infinite 1s">🏆</div>
-    <div class="ob-title">
-      انضم لمجتمع<br>
-      <span style="background:linear-gradient(135deg,#ffb800,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">المتداولين الأذكياء</span>
+  <div class="hr">
+    <div class="fc fc-a">
+      <div class="fc-l">WIN RATE</div>
+      <div class="fc-v" style="color:var(--green)">74.3%</div>
+      <div class="fc-s" style="color:var(--green)">▲ +8.2% هذا الشهر</div>
     </div>
-    <div class="ob-desc">50,000+ متداول يستخدمون Voquex يومياً — ابدأ مجاناً وطوّر أداءك من اليوم الأول</div>
-    <div class="ob-features">
-      <div class="ob-feat"><div class="ob-feat-icon">🆓</div><div class="ob-feat-title" style="color:#00e676">مجاني للأبد</div><div class="ob-feat-sub">20 صفقة/شهر</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">⚡</div><div class="ob-feat-title" style="color:#00f5d4">Pro $9.99</div><div class="ob-feat-sub">صفقات غير محدودة</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">👑</div><div class="ob-feat-title" style="color:#ffb800">Elite $19.99</div><div class="ob-feat-sub">AI Coach كامل</div></div>
-      <div class="ob-feat"><div class="ob-feat-icon">🏢</div><div class="ob-feat-title" style="color:#aa00ff">Team $49.99</div><div class="ob-feat-sub">10 مستخدمين</div></div>
-    </div>
-    <div class="ob-dots">
-      <div class="dot" onclick="goTo(1)"></div>
-      <div class="dot" onclick="goTo(2)"></div>
-      <div class="dot active" onclick="goTo(3)"></div>
-    </div>
-    <button class="btn-next" onclick="goToLogin()" style="background:linear-gradient(135deg,rgba(0,245,212,.2),rgba(41,121,255,.2));border-color:rgba(0,245,212,.4);">ابدأ مجاناً 🚀</button>
-  </div>
-</div>
-
-<!-- LOGIN -->
-<div class="screen slide-right" id="loginScreen">
-  <div class="login-wrap">
-    <div class="login-logo">VOQUEX</div>
-    <div class="login-sub">TRADING INTELLIGENCE PLATFORM</div>
-    <div class="card">
-      <div class="tabs">
-        <button class="tab active" id="t1" onclick="setMode('login')">تسجيل الدخول</button>
-        <button class="tab" id="t2" onclick="setMode('signup')">حساب جديد</button>
+    <div class="term">
+      <div class="tbar">
+        <div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div>
+        <div class="t-ttl">VOQUEX TERMINAL · LIVE</div>
       </div>
-      <div id="msg" class="msg"></div>
-      <label class="lbl">البريد الإلكتروني</label>
-      <div class="inp-wrap">
-        <input class="inp" id="email" type="email" placeholder="example@email.com" dir="ltr">
+      <div class="tbody">
+        <div class="chart-wrap">
+          <canvas id="tChart"></canvas>
+          <div class="chart-info">
+            <div class="ci-p">XAUUSD · 1D</div>
+            <div class="ci-v" id="liveP">2,389.40</div>
+            <div class="ci-c" id="liveC" style="color:var(--green)">▲ +12.30 (0.52%)</div>
+          </div>
+        </div>
+        <div class="t-stats">
+          <div class="tsb"><div class="tsb-l">P&L TODAY</div><div class="tsb-v vg">+$847</div><div class="tsb-s" style="color:var(--green)">▲ 3 صفقات</div></div>
+          <div class="tsb"><div class="tsb-l">WIN RATE</div><div class="tsb-v vgold">68.5%</div><div class="tsb-s">آخر 30 يوم</div></div>
+          <div class="tsb"><div class="tsb-l">PROFIT F.</div><div class="tsb-v vw">2.34</div><div class="tsb-s">ممتاز</div></div>
+        </div>
+        <div class="t-trades-hdr">
+          <div class="tth">RECENT TRADES</div>
+          <div class="ttlive"><span class="live-dot"></span>LIVE</div>
+        </div>
+        <div class="trow"><div class="tbadge tb-b">BUY</div><div class="tr-info"><div class="tr-pair">XAUUSD</div><div class="tr-time">14:32 · لندن</div></div><div class="tr-pnl pos">+$342</div></div>
+        <div class="trow"><div class="tbadge tb-s">SEL</div><div class="tr-info"><div class="tr-pair">EURUSD</div><div class="tr-time">12:15 · لندن</div></div><div class="tr-pnl pos">+$128</div></div>
+        <div class="trow"><div class="tbadge tb-b">BUY</div><div class="tr-info"><div class="tr-pair">US30</div><div class="tr-time">10:45 · نيويورك</div></div><div class="tr-pnl neg">-$89</div></div>
       </div>
-      <label class="lbl">كلمة المرور</label>
-      <div class="inp-wrap">
-        <input class="inp" id="pass" type="password" placeholder="••••••••" dir="ltr" style="padding-left:36px">
-        <button class="inp-icon" onclick="togglePass()">👁</button>
-      </div>
-      <div class="row-between">
-        <label class="remember"><input type="checkbox" id="remember"> تذكرني</label>
-        <button class="forgot" onclick="openForgot()">نسيت كلمة المرور؟</button>
-      </div>
-      <button class="btn-auth" id="authBtn" onclick="doAuth()">دخول ←</button>
-      <div class="divider"><div class="div-line"></div><div class="div-txt">أو</div><div class="div-line"></div></div>
-      <button class="btn-google" onclick="googleAuth()">
-        <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        متابعة مع Google
-      </button>
     </div>
+    <div class="fc fc-b">
+      <div class="fc-l">PROFIT FACTOR</div>
+      <div class="fc-v" style="color:var(--gold2)">2.41</div>
+      <div class="fc-s" style="color:var(--dim2)">أفضل من 96% من المتداولين</div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker"><div class="tick-inner" id="tickEl"></div></div>
+
+<section class="sec feat-sec" id="features">
+  <div class="feat-head rv">
+    <div class="chip">المميزات</div>
+    <h2 class="sec-h">كل ما يحتاجه<br>المتداول المحترف</h2>
+    <p class="sec-p">من تسجيل الصفقة الأولى إلى التحليل العميق — كل شيء في مكان واحد</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-cell rv d1"><div class="fn">01 — ANALYTICS</div><div class="fico">📊</div><div class="ft">تحليلات عميقة</div><div class="fb">أكثر من 50 مؤشر أداء — Win Rate، Profit Factor، Max Drawdown، Best Session، Avg RR.</div><div class="ftag">50+ METRICS</div></div>
+    <div class="feat-cell rv d2"><div class="fn">02 — AI COACH</div><div class="fico">🤖</div><div class="ft">EdgeBot AI</div><div class="fb">ذكاء اصطناعي يحلل صفقاتك ويعطيك توصيات مخصصة. يكشف نقاط ضعفك قبل ما تخسر.</div><div class="ftag">AI POWERED</div></div>
+    <div class="feat-cell rv d3"><div class="fn">03 — RISK</div><div class="fico">🛡️</div><div class="ft">إدارة المخاطر</div><div class="fb">حاسبة Lot Size ذكية، تحليل Drawdown، حد الخسارة اليومي وتنبيهات Revenge Trading.</div><div class="ftag">RISK CONTROL</div></div>
+    <div class="feat-cell rv"><div class="fn">04 — JOURNAL</div><div class="fico">📋</div><div class="ft">سجل الصفقات</div><div class="fb">سجّل صفقاتك بتفاصيل كاملة — الدخول، الخروج، الجلسة، الحالة النفسية والملاحظات.</div><div class="ftag">UNLIMITED</div></div>
+    <div class="feat-cell rv d1"><div class="fn">05 — LEADERBOARD</div><div class="fico">🏆</div><div class="ft">المتصدرون العالميون</div><div class="fb">قارن أداءك مع آلاف المتداولين. تنافس على المراكز الأولى في مجتمع نخبة المتداولين.</div><div class="ftag">GLOBAL</div></div>
+    <div class="feat-cell rv d2"><div class="fn">06 — PSYCHOLOGY</div><div class="fico">🧠</div><div class="ft">اليومية النفسية</div><div class="fb">تتبع حالتك النفسية وانضباطك وتركيزك. الربط بين مزاجك ونتائج صفقاتك سر التطور.</div><div class="ftag">PSYCHOLOGY</div></div>
+  </div>
+</section>
+
+<section class="metrics-sec">
+  <div class="rv">
+    <div class="chip">الإحصائيات</div>
+    <h2 class="sec-h">أرقام حقيقية<br>من متداولين حقيقيين</h2>
+    <p class="sec-p">كل رقم مبني على بيانات حقيقية من مجتمع Voquex العالمي.</p>
+  </div>
+  <div class="m-grid">
+    <div class="mc rv"><span class="mc-big" data-t="47832" data-s="K+">0</span><div class="mc-l">متداول نشط</div></div>
+    <div class="mc rv d1"><span class="mc-big" data-t="2.8" data-s="M+" data-f="1">0</span><div class="mc-l">صفقة محللة</div></div>
+    <div class="mc rv d2"><span class="mc-big" data-t="68" data-s="%">0</span><div class="mc-l">متوسط Win Rate</div></div>
+    <div class="mc rv d3"><span class="mc-big" data-t="12" data-s=" لغة">0</span><div class="mc-l">لغة مدعومة</div></div>
+  </div>
+</section>
+
+<section class="ai-sec" id="ai">
+  <div class="ai-box rv">
+    <div class="ai-hdr"><span class="ai-dot"></span><div class="ai-nm">EdgeBot</div><div class="ai-bdg">AI ONLINE</div></div>
+    <div class="ai-body" id="aiBox">
+      <div class="ai-m ai-bot">مرحباً! أنا EdgeBot — حللت صفقاتك الأخيرة وعندي رؤى مهمة جداً. 📊</div>
+      <div class="ai-m ai-usr">إيه أكبر مشكلة في تداولي؟</div>
+      <div class="ai-m ai-bot">بناءً على آخر 47 صفقة: أنت تخسر 71% بعد 4 مساءً في جلسة نيويورك. هذا يكلفك <strong style="color:var(--red)">-$1,240 شهرياً</strong>. توصيتي: أوقف التداول بعد 4 PM. ⏰</div>
+    </div>
+    <div class="ai-ftr">
+      <input class="ai-inp" id="aiIn" placeholder="اسأل EdgeBot عن أدائك..." onkeypress="if(event.key==='Enter')sendAI()">
+      <button class="ai-snd" onclick="sendAI()">→</button>
+    </div>
+  </div>
+  <div class="rv d1">
+    <div class="chip">الذكاء الاصطناعي</div>
+    <h2 class="sec-h">EdgeBot —<br>مدربك الشخصي</h2>
+    <p class="sec-p">يعرف كل صفقاتك ويحللها في الوقت الحقيقي. اسأله أي شيء وستحصل على إجابة دقيقة مبنية على بياناتك.</p>
+    <div class="ai-feats">
+      <div class="af"><div class="af-i">🎯</div><div><div class="af-t">تحليل الأنماط</div><div class="af-d">يكشف نقاط ضعفك الخفية</div></div></div>
+      <div class="af"><div class="af-i">⚠️</div><div><div class="af-t">كشف Revenge Trading</div><div class="af-d">تنبيه فوري عند خسارتين</div></div></div>
+      <div class="af"><div class="af-i">📅</div><div><div class="af-t">خطة أسبوعية</div><div class="af-d">مخصصة لأسبوعك القادم</div></div></div>
+      <div class="af"><div class="af-i">🧠</div><div><div class="af-t">تحليل نفسي</div><div class="af-d">يربط مزاجك بنتائجك</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="nums">
+  <div class="nums-grid">
+    <div class="nc rv"><span class="n-big" id="n1">0</span><div class="n-lbl">متداول نشط</div></div>
+    <div class="nc rv d1"><span class="n-big" id="n2">0</span><div class="n-lbl">صفقة محللة</div></div>
+    <div class="nc rv d2"><span class="n-big" id="n3">0</span><div class="n-lbl">متوسط Win Rate</div></div>
+    <div class="nc rv d3"><span class="n-big" id="n4">0</span><div class="n-lbl">لغات مدعومة</div></div>
   </div>
 </div>
 
-<!-- FORGOT MODAL -->
-<div class="modal-ov" id="forgotModal">
-  <div class="modal">
-    <div class="modal-title">🔑 استعادة كلمة المرور</div>
-    <div class="modal-sub">سنرسل لك رابط إعادة التعيين</div>
-    <label class="lbl">البريد الإلكتروني</label>
-    <div class="inp-wrap"><input class="inp" id="forgotEmail" type="email" placeholder="example@email.com" dir="ltr"></div>
-    <div id="forgotMsg" class="msg"></div>
-    <div class="modal-btns">
-      <button class="mbtn s" onclick="closeForgot()">إلغاء</button>
-      <button class="mbtn p" onclick="sendReset()">إرسال ←</button>
+<section class="price-sec" id="pricing">
+  <div class="price-hdr rv">
+    <div class="chip">الأسعار</div>
+    <h2 class="sec-h">اختر خطتك</h2>
+    <p class="sec-p" style="max-width:380px;margin:0 auto">ابدأ مجاناً — لا حاجة لبطاقة. ترقّ في أي وقت.</p>
+  </div>
+  <div class="p-grid">
+    <div class="pc rv">
+      <div class="p-name">FREE</div><div class="p-price" style="color:var(--dim2)">$0</div><div class="p-period">للأبد</div>
+      <div class="p-div"></div>
+      <ul class="p-list"><li class="y">20 صفقة شهرياً</li><li class="y">لوحة تحكم كاملة</li><li class="y">10 محادثات AI</li><li class="n">AI غير محدود</li><li class="n">تقارير متقدمة</li></ul>
+      <a href="login.html" class="p-btn">ابدأ مجاناً</a>
+    </div>
+    <div class="pc hot rv d1">
+      <div class="hot-tag">★ الأكثر شيوعاً</div>
+      <div class="p-name" style="color:var(--gold)">PRO</div><div class="p-price" style="color:var(--gold2)">$9.99</div><div class="p-period">/شهر · أو $95/سنة</div>
+      <div class="p-div"></div>
+      <ul class="p-list"><li class="y">صفقات غير محدودة</li><li class="y">AI غير محدود</li><li class="y">تقارير متقدمة</li><li class="y">تنبيهات ذكية</li><li class="n">EdgeBot المتقدم</li></ul>
+      <a href="subscription.html" class="p-btn g">اشترك الآن</a>
+    </div>
+    <div class="pc rv d2">
+      <div class="p-name" style="color:var(--gold3)">ELITE</div><div class="p-price" style="color:var(--gold3)">$19.99</div><div class="p-period">/شهر · أو $191/سنة</div>
+      <div class="p-div"></div>
+      <ul class="p-list"><li class="y">كل مميزات Pro</li><li class="y">EdgeBot المتقدم</li><li class="y">خطة شخصية</li><li class="y">تحليل نفسي عميق</li><li class="y">أولوية الدعم</li></ul>
+      <a href="subscription.html" class="p-btn" style="border-color:rgba(255,208,96,.3);color:var(--gold3)">احصل على Elite</a>
+    </div>
+    <div class="pc rv d3">
+      <div class="p-name" style="color:var(--teal)">TEAM</div><div class="p-price" style="color:var(--teal)">$49.99</div><div class="p-period">/شهر للفريق</div>
+      <div class="p-div"></div>
+      <ul class="p-list"><li class="y">10 مستخدمين</li><li class="y">كل مميزات Elite</li><li class="y">لوحة مشتركة</li><li class="y">دعم 24/7</li><li class="y">API خاص</li></ul>
+      <a href="subscription.html" class="p-btn" style="border-color:rgba(0,201,167,.2);color:var(--teal)">للفرق والغرف</a>
     </div>
   </div>
+</section>
+
+<section class="testi-sec" id="testimonials">
+  <div class="testi-hdr rv">
+    <div class="chip">آراء المتداولين</div>
+    <h2 class="sec-h">ماذا يقول مجتمعنا؟</h2>
+  </div>
+  <div class="t-grid">
+    <div class="tc rv"><div class="tc-q">"</div><div class="tc-txt">بعد 3 أشهر مع Voquex اكتشفت إني كنت أخسر 80% من أموالي في جلسة واحدة. EdgeBot غيّر طريقة تفكيري بالكامل.</div><div class="tc-bot"><div><div class="tc-name">أحمد محمد 🇪🇬</div><div class="tc-role">متداول فوركس · 3 سنوات</div></div><div class="tc-stars">★★★★★</div></div></div>
+    <div class="tc rv d1"><div class="tc-q">"</div><div class="tc-txt">المنصة الوحيدة بالعربي بمستوى احترافي حقيقي. التحليلات دقيقة وEdgeBot كوتش شخصي بمعنى الكلمة. Win Rate وصل 71%.</div><div class="tc-bot"><div><div class="tc-name">سارة العلي 🇸🇦</div><div class="tc-role">متداولة ذهب · 5 سنوات</div></div><div class="tc-stars">★★★★★</div></div></div>
+    <div class="tc rv d2"><div class="tc-q">"</div><div class="tc-txt">كنت أظن المشكلة في الاستراتيجية. Voquex أثبت إن المشكلة كانت في توقيتي ونفسيتي. ربحي تضاعف في شهرين.</div><div class="tc-bot"><div><div class="tc-name">خالد الراشد 🇰🇼</div><div class="tc-role">متداول مؤشرات · 4 سنوات</div></div><div class="tc-stars">★★★★★</div></div></div>
+  </div>
+</section>
+
+<section class="cta-sec">
+  <h2 class="cta-h rv">ابدأ رحلتك نحو<br><span>التداول المحترف</span></h2>
+  <p class="cta-sub rv">انضم لـ 47,000+ متداول يستخدمون Voquex يومياً</p>
+  <div class="cta-btns rv">
+    <a href="login.html" class="h-cta">ابدأ مجاناً — بدون بطاقة</a>
+    <a href="#pricing" class="h-sec">💎 شاهد الخطط</a>
+  </div>
+</section>
+
+<footer>
+  <div class="fg">
+    <div><span class="fl-logo">VOQUEX</span><p class="fl-p">يومية التداول الذكية الأولى بالعربية — مدعومة بذكاء اصطناعي متقدم.</p>
+      <div class="fl-soc"><a class="fsoc" href="#">𝕏</a><a class="fsoc" href="#">in</a><a class="fsoc" href="#">📱</a><a class="fsoc" href="#">▶</a></div>
+    </div>
+    <div class="fcol"><h4>المنتج</h4><a href="login.html">لوحة التحكم</a><a href="trades.html">سجل الصفقات</a><a href="analytics.html">التحليلات</a><a href="ai.html">EdgeBot AI</a><a href="risk.html">إدارة المخاطر</a><a href="leaderboard.html">المتصدرون</a></div>
+    <div class="fcol"><h4>الشركة</h4><a href="#">من نحن</a><a href="#">المدونة</a><a href="#">الشراكات</a><a href="#">برنامج الإحالات</a></div>
+    <div class="fcol"><h4>الدعم</h4><a href="mailto:info.mohammed1c@gmail.com">راسلنا</a><a href="#">الأسئلة الشائعة</a><a href="#">سياسة الخصوصية</a><a href="#">الشروط والأحكام</a></div>
+  </div>
+  <div class="f-bot"><div class="f-copy">© 2026 VOQUEX · ALL RIGHTS RESERVED · CAIRO 🇪🇬</div><div class="f-copy">v1.0.0</div></div>
+</footer>
+
+<div class="sup">
+  <button class="sup-btn" onclick="location.href='mailto:info.mohammed1c@gmail.com'">
+    <div class="sup-ring"></div>
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  </button>
+  <div class="sup-tip">تواصل مع الدعم الفني</div>
 </div>
 
-<!-- SUPPORT -->
-<div class="support">
-  للدعم والاستفسارات: <a href="mailto:info.mohammed1c@gmail.com">info.mohammed1c@gmail.com</a>
-</div>
+<script>
+// BG CANVAS
+const cv=document.getElementById('bgCanvas'),cx=cv.getContext('2d');
+function rsz(){cv.width=window.innerWidth;cv.height=window.innerHeight;}rsz();window.addEventListener('resize',rsz);
+const pts=[];
+for(let i=0;i<200;i++){const r=Math.random();pts.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+.2,vx:(Math.random()-.5)*.16,vy:(Math.random()-.5)*.16,a:Math.random()*.45+.08,c:r>.65?[200,164,90]:r>.35?[0,201,167]:[238,242,255]});}
+function draw(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  cx.strokeStyle='rgba(200,164,90,0.016)';cx.lineWidth=.5;
+  for(let x=0;x<cv.width;x+=100){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,cv.height);cx.stroke();}
+  for(let y=0;y<cv.height;y+=100){cx.beginPath();cx.moveTo(0,y);cx.lineTo(cv.width,y);cx.stroke();}
+  pts.forEach((p,i)=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;
+    cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c[0]},${p.c[1]},${p.c[2]},${p.a})`;cx.fill();
+    for(let j=i+1;j<Math.min(i+6,pts.length);j++){const d=Math.hypot(p.x-pts[j].x,p.y-pts[j].y);if(d<100){cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(pts[j].x,pts[j].y);cx.strokeStyle=`rgba(200,164,90,${(1-d/100)*.03})`;cx.lineWidth=.4;cx.stroke();}}
+  });requestAnimationFrame(draw);}
+draw();
 
-<script type="module">
-import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
-
-// تحقق من الجلسة
-const{data:{session}}=await sb.auth.getSession()
-if(session) location.href='dashboard.html'
-
-// تحقق من Onboarding
-const seen=localStorage.getItem('voquex_seen')
-let curScreen=seen?'loginScreen':'ob1'
-if(seen){
-  document.getElementById('ob1').classList.remove('active')
-  document.getElementById('loginScreen').classList.add('active')
-  document.getElementById('skipBtn').style.display='none'
+// MINI CHART
+const tc=document.getElementById('tChart'),tctx=tc.getContext('2d');
+tc.width=440;tc.height=120;
+const cd=[2340,2344,2342,2349,2347,2354,2351,2359,2356,2363,2360,2368,2365,2372,2369,2377,2374,2381,2378,2389];
+let cp=0;
+function drawChart(){
+  tctx.clearRect(0,0,tc.width,tc.height);
+  const n=Math.min(Math.floor(cp)+2,cd.length);
+  const mn=Math.min(...cd.slice(0,n)),mx=Math.max(...cd.slice(0,n));
+  const rng=mx-mn||1,pw=tc.width/(cd.length-1),ph=tc.height;
+  const g=tctx.createLinearGradient(0,0,0,ph);
+  g.addColorStop(0,'rgba(200,164,90,.1)');g.addColorStop(1,'rgba(200,164,90,0)');
+  tctx.beginPath();
+  cd.slice(0,n).forEach((v,i)=>{const x=i*pw,y=ph-(v-mn)/rng*(ph-22)-11;i===0?tctx.moveTo(x,y):tctx.lineTo(x,y);});
+  const lx=(n-1)*pw,ly=ph-(cd[n-1]-mn)/rng*(ph-22)-11;
+  tctx.lineTo(lx,ph);tctx.lineTo(0,ph);tctx.fillStyle=g;tctx.fill();
+  tctx.beginPath();
+  cd.slice(0,n).forEach((v,i)=>{const x=i*pw,y=ph-(v-mn)/rng*(ph-22)-11;i===0?tctx.moveTo(x,y):tctx.lineTo(x,y);});
+  tctx.strokeStyle='rgba(200,164,90,.85)';tctx.lineWidth=2;tctx.stroke();
+  tctx.beginPath();tctx.arc(lx,ly,4,0,Math.PI*2);tctx.fillStyle='#c8a45a';tctx.fill();
+  tctx.beginPath();tctx.arc(lx,ly,9,0,Math.PI*2);tctx.fillStyle='rgba(200,164,90,.15)';tctx.fill();
+  if(cp<cd.length-1){cp+=.2;requestAnimationFrame(drawChart);}
 }
+setTimeout(drawChart,500);
 
-window.goTo=function(n){
-  const screens=['ob1','ob2','ob3']
-  screens.forEach(id=>document.getElementById(id).classList.remove('active'))
-  document.getElementById('ob'+n).classList.add('active')
-}
-
-window.goToLogin=function(){
-  localStorage.setItem('voquex_seen','1')
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
-  document.getElementById('loginScreen').classList.add('active')
-  document.getElementById('skipBtn').style.display='none'
-}
-
-let mode='login'
-window.setMode=function(m){
-  mode=m
-  document.getElementById('t1').classList.toggle('active',m==='login')
-  document.getElementById('t2').classList.toggle('active',m==='signup')
-  document.getElementById('authBtn').textContent=m==='login'?'دخول ←':'إنشاء حساب ←'
-  document.getElementById('msg').className='msg'
-}
-
-window.togglePass=function(){
-  const p=document.getElementById('pass')
-  p.type=p.type==='password'?'text':'password'
-}
-
-window.openForgot=()=>document.getElementById('forgotModal').classList.add('open')
-window.closeForgot=()=>document.getElementById('forgotModal').classList.remove('open')
-
-window.sendReset=async function(){
-  const email=document.getElementById('forgotEmail').value.trim()
-  const msg=document.getElementById('forgotMsg')
-  if(!email){msg.textContent='أدخل بريدك';msg.className='msg err';return}
-  const{error}=await sb.auth.resetPasswordForEmail(email)
-  if(error){msg.textContent='خطأ: '+error.message;msg.className='msg err';}
-  else{msg.textContent='✅ تم الإرسال! تحقق من بريدك';msg.className='msg ok';}
-}
-
-window.doAuth=async function(){
-  const e=document.getElementById('email').value.trim()
-  const p=document.getElementById('pass').value
-  const btn=document.getElementById('authBtn')
-  const msg=document.getElementById('msg')
-  if(!e||!p){msg.textContent='أدخل البريد وكلمة المرور';msg.className='msg err';return}
-  btn.disabled=true;btn.textContent='⏳...'
-  try{
-    if(mode==='signup'){
-      const{error}=await sb.auth.signUp({email:e,password:p})
-      if(error)throw error
-      msg.textContent='✅ تم إنشاء الحساب!';msg.className='msg ok'
-    }else{
-      const{error}=await sb.auth.signInWithPassword({email:e,password:p})
-      if(error)throw error
-      location.href='dashboard.html'
-    }
-  }catch(err){msg.textContent='خطأ: '+err.message;msg.className='msg err';}
-  btn.disabled=false;btn.textContent=mode==='login'?'دخول ←':'إنشاء حساب ←'
-}
-
-window.googleAuth=async function(){
-  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/dashboard.html'}})
-  if(error)alert('خطأ: '+error.message)
-}
-
-// اللغات
-window.toggleLang=()=>document.getElementById('langDrop').classList.toggle('open')
-document.addEventListener('click',e=>{if(!e.target.closest('.lang-btn')&&!e.target.closest('.lang-dropdown'))document.getElementById('langDrop').classList.remove('open')})
-
-window.setLang=function(l,label,dir,el){
-  document.querySelectorAll('.lang-opt').forEach(e=>e.classList.remove('active'))
-  el.classList.add('active')
-  document.getElementById('langLabel').textContent=label
-  document.body.dir=dir
-  document.getElementById('langDrop').classList.remove('open')
-}
+// LIVE PRICE
+setInterval(()=>{
+  const p=(2389+(Math.random()*2-1)).toFixed(2);const c=((Math.random()*18)-4).toFixed(2);
+  document.getElementById('liveP').textContent=parseFloat(p).toLocaleString('en',{minimumFractionDigits:2});
+  const el=document.getElementById('liveC');const up=parseFloat(c)>0;
+  el.textContent=(up?'▲ +':'▼ ')+Math.abs(c)+' ('+(Math.abs(c/p*100)).toFixed(2)+'%)';
+  el.style.color=up?'var(--green)':'var(--red)';
+},2200);
 
 // TICKER
-const tData=[
-  {p:'XAUUSD',v:'2,345.80',u:true},{p:'EURUSD',v:'1.0892',u:false},
-  {p:'GBPUSD',v:'1.2654',u:true},{p:'BTCUSD',v:'67,420',u:true},
-  {p:'US30',v:'38,920',u:false},{p:'NAS100',v:'17,840',u:true},
-  {p:'USDJPY',v:'149.82',u:false},{p:'ETHUSD',v:'3,420',u:true},
-  {p:'USOIL',v:'82.40',u:false},{p:'XAGUSD',v:'27.85',u:true},
-  {p:'SP500',v:'5,234',u:true},{p:'FTSE100',v:'7,820',u:false},
-]
-const tEl=document.getElementById('ticker')
-tEl.innerHTML=[...tData,...tData].map(t=>`<div class="tick-item"><span class="tick-pair">${t.p}</span><span class="${t.u?'tick-up':'tick-down'}">${t.u?'▲':'▼'} ${t.v}</span></div>`).join('')
+const tkrs=[{n:'XAUUSD',p:2389.4,u:true},{n:'EURUSD',p:1.0892,u:false},{n:'GBPUSD',p:1.2654,u:true},{n:'BTCUSD',p:67420,u:true},{n:'US30',p:38920,u:false},{n:'NAS100',p:17840,u:true},{n:'USDJPY',p:149.82,u:false},{n:'USOIL',p:78.4,u:true},{n:'ETHUSD',p:3420,u:true},{n:'SP500',p:5240,u:true},{n:'SILVER',p:28.4,u:false},{n:'GBPJPY',p:189.2,u:true}];
+function bldTk(){return[...tkrs,...tkrs].map(t=>`<div class="ti"><span class="ti-n">${t.n}</span><span class="ti-p">${t.p.toFixed(t.p>100?2:4)}</span><span class="${t.u?'ti-u':'ti-d'}">${t.u?'▲':'▼'} ${(Math.random()*.5+.01).toFixed(2)}%</span><span class="ti-sep">|</span></div>`).join('');}
+document.getElementById('tickEl').innerHTML=bldTk();
+setInterval(()=>{tkrs.forEach(t=>{const d=(Math.random()-.5)*(t.p>100?.4:.0004);t.p=Math.max(.001,t.p+d);t.u=d>0;});document.getElementById('tickEl').innerHTML=bldTk();},3000);
 
-// تحديث الأسعار كل 3 ثواني
-setInterval(()=>{
-  document.querySelectorAll('.tick-item').forEach((el,i)=>{
-    const d=tData[i%tData.length]
-    const change=(Math.random()-.5)*.5
-    const newVal=parseFloat(d.v.replace(',',''))+change
-    d.u=change>0
-    el.querySelector('.tick-pair').textContent=d.p
-    const span=el.querySelector(change>0?'.tick-up':'.tick-down')||el.querySelector('span:last-child')
-    span.className=change>0?'tick-up':'tick-down'
-    span.textContent=(change>0?'▲':'▼')+' '+newVal.toFixed(d.v.includes(',')?0:4)
-  })
-},3000)
+// COUNTER
+function cnt(el,target,suffix,isFloat){
+  let c=0;const step=target/65;
+  const t=setInterval(()=>{c+=step;if(c>=target){c=target;clearInterval(t);}
+  if(isFloat)el.textContent=c.toFixed(1)+suffix;
+  else if(target>10000)el.textContent=Math.floor(c).toLocaleString()+suffix;
+  else el.textContent=Math.floor(c)+suffix;},18);}
 
-// CANVAS
-const cv=document.getElementById('c'),ctx=cv.getContext('2d')
-cv.width=window.innerWidth;cv.height=window.innerHeight
-const pts=Array.from({length:80},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.2+.3,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,c:['#00f5d4','#2979ff','#aa00ff','#ffb800'][~~(Math.random()*4)]}))
-function draw(){
-  ctx.clearRect(0,0,cv.width,cv.height)
-  ctx.fillStyle='#06080f';ctx.fillRect(0,0,cv.width,cv.height)
-  ctx.strokeStyle='rgba(0,245,212,.01)';ctx.lineWidth=.5
-  for(let i=0;i<cv.width;i+=60){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,cv.height);ctx.stroke()}
-  for(let i=0;i<cv.height;i+=60){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(cv.width,i);ctx.stroke()}
-  pts.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy
-    if(p.x<0)p.x=cv.width;if(p.x>cv.width)p.x=0
-    if(p.y<0)p.y=cv.height;if(p.y>cv.height)p.y=0
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.c;ctx.fill()
-    pts.forEach(p2=>{
-      const d=Math.hypot(p.x-p2.x,p.y-p2.y)
-      if(d<70){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=`rgba(0,245,212,${.04*(1-d/70)})`;ctx.lineWidth=.3;ctx.stroke()}
-    })
-  })
-  requestAnimationFrame(draw)
-}
-draw()
-window.onresize=()=>{cv.width=window.innerWidth;cv.height=window.innerHeight}
+// SCROLL REVEAL
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('in');
+    e.target.querySelectorAll('[data-t]').forEach(el=>{
+      if(el.dataset.done)return;el.dataset.done='1';
+      const t=parseFloat(el.dataset.t),sf=el.dataset.s||'',fl=!!el.dataset.f;
+      cnt(el,t,sf,fl);
+    });
+  });
+},{threshold:.18});
+document.querySelectorAll('.rv').forEach(el=>ro.observe(el));
+
+// BIG NUMBERS
+const nms=[{id:'n1',t:47832,fn:v=>Math.floor(v/1000)+'K+'},{id:'n2',t:2800000,fn:v=>(v/1000000).toFixed(1)+'M+'},{id:'n3',t:68,fn:v=>Math.floor(v)+'%'},{id:'n4',t:12,fn:v=>Math.floor(v)+' لغة'}];
+const nro=new IntersectionObserver(ens=>{ens.forEach(e=>{if(!e.isIntersecting)return;nms.forEach(nm=>{const el=document.getElementById(nm.id);if(!el||el.dataset.done)return;el.dataset.done='1';let c=0;const step=nm.t/65;const t=setInterval(()=>{c+=step;if(c>=nm.t){c=nm.t;clearInterval(t);}el.textContent=nm.fn(c);},18);});nro.disconnect();});},{threshold:.2});
+const numsEl=document.querySelector('.nums');if(numsEl)nro.observe(numsEl);
+
+// AI CHAT
+const reps=['بناءً على بياناتك: أفضل وقت للتداول جلسة لندن 10ص–12ظ. Win Rate بتاعك 78% في هذا الوقت! 🎯','لاحظت Revenge Trading بعد كل خسارتين. هذا يكلفك -23% شهرياً. 🚨','أقوى زوج لديك: XAUUSD بـ Win Rate 74% ومتوسط RR 2.3. ركز عليه! 💰','توصيتي: تداول XAUUSD جلسة لندن فقط وحدد خسارتك اليومية بـ 2%. هذا سيزيد أرباحك 35%. 📈','Profit Factor 2.34 ممتاز! لكن Max Drawdown 18% محتاج نشتغل عليه. ⚠️'];
+let ai=0;
+window.sendAI=function(){const inp=document.getElementById('aiIn');const msg=inp.value.trim();if(!msg)return;const box=document.getElementById('aiBox');box.innerHTML+=`<div class="ai-m ai-usr">${msg}</div><div class="ai-typ"><span></span><span></span><span></span></div>`;inp.value='';box.scrollTop=9999;setTimeout(()=>{box.querySelector('.ai-typ').remove();box.innerHTML+=`<div class="ai-m ai-bot">${reps[ai%reps.length]}</div>`;ai++;box.scrollTop=9999;},1400);};
 </script>
 </body>
 </html>
+```
+

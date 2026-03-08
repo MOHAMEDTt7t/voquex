@@ -1,0 +1,304 @@
+html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voquex — تسجيل الدخول</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Syne:wght@700;800;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#00020a;
+  --bg2:#030810;
+  --gold:#c8a45a;
+  --gold2:#e8c97a;
+  --gold3:#ffd060;
+  --green:#00e87a;
+  --red:#ff2d55;
+  --white:#eef2ff;
+  --dim:#2a3d56;
+  --dim2:#5a7a9a;
+}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--white);font-family:'Tajawal',sans-serif;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+::-webkit-scrollbar{width:2px;}
+
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* MAIN LAYOUT */
+.page{position:relative;z-index:2;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+/* CARD */
+.card{width:100%;max-width:420px;background:rgba(3,8,16,.95);border:1px solid rgba(200,164,90,.12);border-radius:20px;overflow:hidden;box-shadow:0 50px 150px rgba(0,0,0,.9),0 0 80px rgba(200,164,90,.04),inset 0 1px 0 rgba(200,164,90,.08);}
+
+/* CARD TOP */
+.card-top{padding:32px 32px 0;text-align:center;}
+.logo{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:8px;}
+.tagline{font-size:.72rem;color:var(--dim2);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+
+/* TABS */
+.tabs{display:flex;margin:24px 32px 0;background:rgba(200,164,90,.04);border:1px solid rgba(200,164,90,.08);border-radius:10px;padding:4px;gap:4px;}
+.tab{flex:1;padding:9px;border:none;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;background:transparent;color:var(--dim2);}
+.tab.active{background:linear-gradient(135deg,rgba(200,164,90,.15),rgba(200,164,90,.08));color:var(--gold2);border:1px solid rgba(200,164,90,.15);}
+
+/* FORMS */
+.forms{padding:24px 32px 32px;}
+.form{display:none;flex-direction:column;gap:16px;}
+.form.active{display:flex;}
+
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:.72rem;color:var(--dim2);font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
+.field input{background:rgba(200,164,90,.03);border:1px solid rgba(200,164,90,.1);border-radius:10px;padding:12px 16px;color:var(--white);font-family:'Tajawal',sans-serif;font-size:.9rem;outline:none;transition:all .25s;width:100%;}
+.field input:focus{border-color:rgba(200,164,90,.35);background:rgba(200,164,90,.05);box-shadow:0 0 0 3px rgba(200,164,90,.06);}
+.field input::placeholder{color:var(--dim);}
+
+.forgot{font-size:.72rem;color:var(--dim2);text-decoration:none;text-align:left;transition:color .2s;display:block;margin-top:-8px;}
+.forgot:hover{color:var(--gold2);}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:12px;margin:4px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(200,164,90,.08);}
+.divider span{font-size:.65rem;color:var(--dim);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+
+/* BUTTONS */
+.btn-main{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold3),var(--gold2),var(--gold),#8a6520);border:none;border-radius:10px;color:#000;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+.btn-main::after{content:'';position:absolute;inset:0;background:linear-gradient(to left,rgba(255,255,255,.15),transparent);opacity:0;transition:.3s;}
+.btn-main:hover::after{opacity:1;}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(200,164,90,.35);}
+.btn-main:active{transform:translateY(0);}
+.btn-main:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+.btn-google{width:100%;padding:13px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:var(--white);font-family:'Tajawal',sans-serif;font-size:.9rem;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-google:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);}
+.btn-google svg{width:18px;height:18px;flex-shrink:0;}
+
+/* ERROR / SUCCESS */
+.msg{padding:10px 14px;border-radius:8px;font-size:.78rem;display:none;align-items:center;gap:8px;}
+.msg.error{background:rgba(255,45,85,.08);border:1px solid rgba(255,45,85,.2);color:#ff6b8a;display:flex;}
+.msg.success{background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);color:var(--green);display:flex;}
+
+/* LOADING */
+.spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.btn-main.loading .btn-txt{display:none;}
+.btn-main.loading .spinner{display:inline-block;}
+
+/* FOOTER TEXT */
+.card-foot{padding:0 32px 24px;text-align:center;}
+.foot-txt{font-size:.7rem;color:var(--dim2);line-height:1.7;}
+.foot-txt a{color:var(--gold);text-decoration:none;}
+.foot-txt a:hover{color:var(--gold2);}
+
+/* BACK LINK */
+.back{position:fixed;top:24px;right:24px;z-index:10;display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--dim2);text-decoration:none;transition:color .2s;font-family:'IBM Plex Mono',monospace;}
+.back:hover{color:var(--gold2);}
+
+/* SIDE INFO */
+.side-info{position:fixed;bottom:32px;left:32px;z-index:10;}
+.si-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.si-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.si-txt{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim2);}
+.si-num{color:var(--gold2);}
+
+@media(max-width:480px){
+  .card{border-radius:16px;margin:10px;}
+  .card-top{padding:24px 24px 0;}
+  .tabs{margin:20px 24px 0;}
+  .forms{padding:20px 24px 24px;}
+  .card-foot{padding:0 24px 20px;}
+  .side-info{display:none;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<a href="index.html" class="back">← الرئيسية</a>
+
+<div class="side-info">
+  <div class="si-item">
+    <span class="si-dot"></span>
+    <span class="si-txt"><span class="si-num">47,832</span> ACTIVE TRADERS</span>
+  </div>
+  <div class="si-item">
+    <span class="si-dot" style="background:var(--gold);animation-delay:.5s"></span>
+    <span class="si-txt">SECURED BY <span class="si-num">SUPABASE</span></span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="card">
+    <div class="card-top">
+      <span class="logo">VOQUEX</span>
+      <div class="tagline">SMART TRADING JOURNAL</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">تسجيل الدخول</button>
+      <button class="tab" onclick="switchTab('register')">حساب جديد</button>
+    </div>
+
+    <div class="forms">
+
+      <!-- LOGIN FORM -->
+      <div class="form active" id="loginForm">
+        <div class="msg" id="loginMsg"></div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeypress="if(event.key==='Enter')doLogin()">
+        </div>
+        <a href="#" class="forgot" onclick="doForgot(event)">نسيت كلمة المرور؟</a>
+        <button class="btn-main" id="loginBtn" onclick="doLogin()">
+          <span class="btn-txt">دخول ←</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="divider"><span>أو</span></div>
+        <button class="btn-google" onclick="doGoogle()">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          الدخول بـ Google
+        </button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div class="form" id="registerForm">
+        <div class="msg" id="registerMsg"></div>
+        <div class="field">
+          <label>الاسم الكامل</label>
+          <input type="text" id="regName" placeholder="محمد أحمد" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <input type="password" id="regPass" placeholder="8 أحرف على الأقل" autocomplete="new-password" onkeypress="if(event.key==='Enter')doRegister()">
+        </div>
+        <button class="btn-main" id="registerBtn" onclick="doRegister()">
+          <span class="btn-txt">إنشاء حساب مجاني ←</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="divider"><span>أو</span></div>
+        <button class="btn-google" onclick="doGoogle()">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          التسجيل بـ Google
+        </button>
+      </div>
+
+    </div>
+
+    <div class="card-foot">
+      <div class="foot-txt">
+        بالدخول أو التسجيل أنت توافق على <a href="#">شروط الاستخدام</a> و<a href="#">سياسة الخصوصية</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const sb=createClient('https://jiedtrdinoobqnlwytct.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZWR0cmRpbm9vYnFubHd5dGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NjEsImV4cCI6MjA4ODM3MzY2MX0.eoYvY8cRkKydmXRghPpfnpBwbSuRxZdi89xJQ1jFC1Q')
+
+// CHECK IF ALREADY LOGGED IN
+const{data:{session}}=await sb.auth.getSession()
+
+
+// TAB SWITCH
+window.switchTab=function(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',i===(tab==='login'?0:1))})
+  document.getElementById('loginForm').classList.toggle('active',tab==='login')
+  document.getElementById('registerForm').classList.toggle('active',tab==='register')
+}
+
+// SHOW MSG
+function showMsg(id,type,txt){
+  const el=document.getElementById(id)
+  el.className='msg '+type
+  el.innerHTML=(type==='error'?'⚠️ ':'✅ ')+txt
+  el.style.display='flex'
+  setTimeout(()=>{el.style.display='none'},5000)
+}
+
+// SET LOADING
+function setLoading(btnId,on){
+  const btn=document.getElementById(btnId)
+  btn.classList.toggle('loading',on)
+  btn.disabled=on
+}
+
+// LOGIN
+window.doLogin=async function(){
+  const email=document.getElementById('loginEmail').value.trim()
+  const pass=document.getElementById('loginPass').value
+  if(!email||!pass){showMsg('loginMsg','error','من فضلك أدخل البريد وكلمة المرور');return}
+  setLoading('loginBtn',true)
+  const{error}=await sb.auth.signInWithPassword({email,password:pass})
+  setLoading('loginBtn',false)
+  if(error){
+    const msgs={'Invalid login credentials':'البريد أو كلمة المرور غلط','Email not confirmed':'من فضلك تحقق من بريدك الإلكتروني'}
+    showMsg('loginMsg','error',msgs[error.message]||'حدث خطأ، حاول مرة أخرى')
+  }else{location.href='dashboard.html'}
+}
+
+// REGISTER
+window.doRegister=async function(){
+  const name=document.getElementById('regName').value.trim()
+  const email=document.getElementById('regEmail').value.trim()
+  const pass=document.getElementById('regPass').value
+  if(!name||!email||!pass){showMsg('registerMsg','error','من فضلك أكمل كل الحقول');return}
+  if(pass.length<8){showMsg('registerMsg','error','كلمة المرور 8 أحرف على الأقل');return}
+  setLoading('registerBtn',true)
+  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}})
+  setLoading('registerBtn',false)
+  if(error){
+    const msgs={'User already registered':'البريد الإلكتروني مسجل مسبقاً'}
+    showMsg('registerMsg','error',msgs[error.message]||'حدث خطأ، حاول مرة أخرى')
+  }else{showMsg('registerMsg','success','تم إنشاء الحساب! جاري التوجيه...'); setTimeout(()=>location.href='dashboard.html',1500)}
+}
+
+// GOOGLE
+window.doGoogle=async function(){
+  await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/dashboard.html'}})
+}
+
+// FORGOT
+window.doForgot=async function(e){
+  e.preventDefault()
+  const email=document.getElementById('loginEmail').value.trim()
+  if(!email){showMsg('loginMsg','error','أدخل بريدك الإلكتروني أولاً');return}
+  await sb.auth.resetPasswordForEmail(email)
+  showMsg('loginMsg','success','تم إرسال رابط إعادة تعيين كلمة المرور')
+}
+</script>
+
+<script>
+// BG CANVAS
+const cv=document.getElementById('bgCanvas'),cx=cv.getContext('2d');
+function rsz(){cv.width=window.innerWidth;cv.height=window.innerHeight;}rsz();window.addEventListener('resize',rsz);
+const pts=[];
+for(let i=0;i<150;i++){const r=Math.random();pts.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.1+.2,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,a:Math.random()*.4+.06,c:r>.65?[200,164,90]:r>.35?[0,201,167]:[238,242,255]});}
+function draw(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  cx.strokeStyle='rgba(200,164,90,0.015)';cx.lineWidth=.5;
+  for(let x=0;x<cv.width;x+=100){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,cv.height);cx.stroke();}
+  for(let y=0;y<cv.height;y+=100){cx.beginPath();cx.moveTo(0,y);cx.lineTo(cv.width,y);cx.stroke();}
+  pts.forEach((p,i)=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;
+    cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c[0]},${p.c[1]},${p.c[2]},${p.a})`;cx.fill();
+    for(let j=i+1;j<Math.min(i+5,pts.length);j++){const d=Math.hypot(p.x-pts[j].x,p.y-pts[j].y);if(d<90){cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(pts[j].x,pts[j].y);cx.strokeStyle=`rgba(200,164,90,${(1-d/90)*.025})`;cx.lineWidth=.4;cx.stroke();}}
+  });requestAnimationFrame(draw);}
+draw();
+</script>
+</body>
+</html>
+
+
+
